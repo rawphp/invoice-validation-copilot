@@ -1,7 +1,13 @@
 # REQ-020: Redirect GET /validate to home
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.9589
+**Claimed at:** 2026-06-24T10:58:21Z
+**Heartbeat:** 2026-06-24T10:58:21Z
+<!-- claimed-end -->
+
 **UR:** UR-003
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** none
 **Entry point:**
