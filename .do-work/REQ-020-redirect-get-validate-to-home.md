@@ -45,6 +45,12 @@ The reload-loses-result trade-off is accepted: the `InvoiceResult` is request-sc
 2. **runtime** Run `php artisan route:list --path=validate` — Expected: both a `GET|HEAD validate` entry and a `POST validate` entry are listed (the GET no longer absent).
 3. **test** `./vendor/bin/pest` — Expected: full suite green, no regressions in HomePageTest or ValidateInvoiceTest.
 
+## Post-merge validation
+
+> The direct `GET /validate` redirect is fully proven by the feature test above. This item confirms the real end-to-end browser reload, which requires running the live upload pipeline (Claude API) and so cannot run in a worker's isolated worktree.
+
+- [ ] Upload an invoice on `/`, land on the Result page, then reload the browser — Observable outcome: the browser navigates to `/` (the upload page) instead of showing a 405 / error.
+
 ## Assets
 
 - (none)
