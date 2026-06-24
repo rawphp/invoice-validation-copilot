@@ -1,19 +1,13 @@
 # REQ-026: Exclude adjustment lines from the subtotal line-item check
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.53586
-**Claimed at:** 2026-06-24T23:22:36Z
-**Heartbeat:** 2026-06-24T23:22:36Z
-<!-- claimed-end -->
-
 **UR:** UR-006
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-25
 **Layer:** none
 **Entry point:**
 **Terminal state:**
 **Parent:**
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:4dc84c1
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** M
@@ -53,12 +47,12 @@ Challenger edge (must not regress): a sign-only rule is insufficient because the
 
 ## Acceptance Criteria
 
-- [ ] The UR-006 invoice fixture (lines: Garden Maintenance $270.00, Fuel Surcharge $13.50, Late Fee +$6.00, Payment received −$150.00; subtotal $257.72, GST $25.78, total $283.50) produces **zero `error`-severity `subtotal` findings**.
-- [ ] That same UR-006 fixture produces **exactly one `info`-severity `subtotal` finding** whose message references the outstanding balance / payments (the charge total reconciles to the Total while the full line sum does not).
-- [ ] REQ-021's `paymentAllocatedInvoice` (net-Total orientation, full line sum 18.00 == total 18.00) still produces **zero `error`-severity `subtotal` findings** (no regression).
-- [ ] REQ-019's `gstInclusiveInvoiceWithWrongLineItems` (genuine typo, lineSum 90.00 reconciles to neither subtotal 72.73 nor total 80.00, and no adjustment lines) still emits **exactly one `error`-severity `subtotal` finding**.
-- [ ] `consistentInvoice` (GST-exclusive charge-only) and `gstInclusiveInvoice` (GST-inclusive charge-only) still produce **zero `subtotal` findings** of any severity (no regression).
-- [ ] A line with a positive amount whose description contains an adjustment keyword (e.g. "Late Fee" +$6.00) is excluded from the charge-only sum, and a line with a negative amount (e.g. "Payment received" −$150.00) is excluded regardless of description.
+- [x] The UR-006 invoice fixture (lines: Garden Maintenance $270.00, Fuel Surcharge $13.50, Late Fee +$6.00, Payment received −$150.00; subtotal $257.72, GST $25.78, total $283.50) produces **zero `error`-severity `subtotal` findings**.
+- [x] That same UR-006 fixture produces **exactly one `info`-severity `subtotal` finding** whose message references the outstanding balance / payments (the charge total reconciles to the Total while the full line sum does not).
+- [x] REQ-021's `paymentAllocatedInvoice` (net-Total orientation, full line sum 18.00 == total 18.00) still produces **zero `error`-severity `subtotal` findings** (no regression).
+- [x] REQ-019's `gstInclusiveInvoiceWithWrongLineItems` (genuine typo, lineSum 90.00 reconciles to neither subtotal 72.73 nor total 80.00, and no adjustment lines) still emits **exactly one `error`-severity `subtotal` finding**.
+- [x] `consistentInvoice` (GST-exclusive charge-only) and `gstInclusiveInvoice` (GST-inclusive charge-only) still produce **zero `subtotal` findings** of any severity (no regression).
+- [x] A line with a positive amount whose description contains an adjustment keyword (e.g. "Late Fee" +$6.00) is excluded from the charge-only sum, and a line with a negative amount (e.g. "Payment received" −$150.00) is excluded regardless of description.
 
 ## Verification Steps
 
@@ -74,3 +68,8 @@ Challenger edge (must not regress): a sign-only rule is insufficient because the
 ## Assets
 
 - .do-work/user-requests/UR-006/assets/validation-screenshot.png — the reported FAILED validation that motivates this fix
+
+## Outputs
+
+- app/Services/Validation/ArithmeticValidator.php — Added a charge-vs-adjustment line classifier (negative amount OR payment/credit/refund/fee description keyword); made check (a) reconciliation additive (full sum OR charge-only sum vs subtotal/total); emits one info-severity subtotal note when charges reconcile but the full line sum does not.
+- tests/Unit/Validation/ArithmeticValidatorTest.php — 6 new test cases covering the UR-006 false-positive (zero error + one info finding), classifier exclusion of positive/negative adjustment lines, and REQ-019/REQ-021 no-regression cases.
