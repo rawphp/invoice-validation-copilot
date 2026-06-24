@@ -1,13 +1,7 @@
 # REQ-024: Payment-allocated invoice validates cleanly end-to-end
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.44067
-**Claimed at:** 2026-06-24T22:44:17Z
-**Heartbeat:** 2026-06-24T22:44:17Z
-<!-- claimed-end -->
-
 **UR:** UR-004
-**Status:** in-progress
+**Status:** pending-validation
 **Created:** 2026-06-24
 **Layer:** none
 **Entry point:** AP operator uploads a payment-allocated invoice on the upload page → POST /validate → InvoicePipeline (extraction → validation → confidence → explanation) → result page.
@@ -32,10 +26,10 @@ From the brief (UR-004): the reported failure is the end-to-end symptom — an o
 
 ## Acceptance Criteria
 
-- [ ] A feature test feeds the brief's payment-allocated invoice through the pipeline and asserts the resulting `errors` array contains **no** `error`-severity finding on the `total` field.
-- [ ] The same test asserts the `errors` array contains exactly one `info`-severity finding referencing the payments/credits applied.
-- [ ] The same test asserts the generated `explanation` does **not** contain supplier-fix framing for the total (e.g. asserts absence of "corrected invoice" / "subtotal plus GST" advice) — proving REQ-022 composed correctly.
-- [ ] The confidence verdict for this invoice is not failed *on account of* the info note (the info finding does not count as a hard error) — assert the confidence `passed` is not dragged down by the info finding.
+- [x] A feature test feeds the brief's payment-allocated invoice through the pipeline and asserts the resulting `errors` array contains **no** `error`-severity finding on the `total` field.
+- [x] The same test asserts the `errors` array contains exactly one `info`-severity finding referencing the payments/credits applied.
+- [x] The same test asserts the generated `explanation` does **not** contain supplier-fix framing for the total (e.g. asserts absence of "corrected invoice" / "subtotal plus GST" advice) — proving REQ-022 composed correctly.
+- [x] The confidence verdict for this invoice is not failed *on account of* the info note (the info finding does not count as a hard error) — assert the confidence `passed` is not dragged down by the info finding.
 
 ## Verification Steps
 
@@ -51,3 +45,8 @@ From the brief (UR-004): the reported failure is the end-to-end symptom — an o
 ## Post-merge validation
 
 - [ ] Operator re-uploads the original Vista Lawn Care invoice from the UR-004 screenshot — Observable outcome: the result matches the corrected expectation (no critical TOTAL error, a payment note instead, and an explanation that does not tell them to ask the supplier for a corrected total).
+- [ ] Run the deferred `ui` Playwright check on the Herd-served app (environment: deferred by the worker — Herd serves the main project dir, not the worktree). Observable outcome: result page shows no red TOTAL critical card, a "Notes" section with the payment/credit message, "0 issues" badge, and an explanation card that does not ask for a corrected invoice.
+
+## Outputs
+
+- tests/Feature/ValidateInvoiceTest.php — added a `paymentAllocatedExtraction()` helper and an end-to-end Pest feature test driving the full `InvoicePipeline` (via `Tests\Fakes\PipelineFakeClaudeClient`) for the UR-004 Vista Lawn Care payment-allocated invoice; asserts no `error`-severity `total` finding, exactly one `info` finding referencing payments, an explanation free of supplier-fix framing, and `confidence.passed = true`. Authoritative run on merged main: ValidateInvoice 13 passed; full suite 123 passed.
