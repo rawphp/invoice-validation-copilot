@@ -1,7 +1,13 @@
 # REQ-022: Frame info-only findings as context, not supplier errors, in the explanation
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.77194
+**Claimed at:** 2026-06-24T11:54:35Z
+**Heartbeat:** 2026-06-24T11:54:35Z
+<!-- claimed-end -->
+
 **UR:** UR-004
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
