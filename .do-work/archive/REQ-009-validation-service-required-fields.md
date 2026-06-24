@@ -1,19 +1,13 @@
 # REQ-009: ValidationService + ValidationError DTO + RequiredFieldsValidator
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T09:24:09Z
-**Heartbeat:** 2026-06-24T09:24:09Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
 **Terminal state:**
 **Parent:** REQ-003
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:a19c9be
 **Criteria approved:** agent-drafted
 **Priority:** 3
 **Size:** M
@@ -30,10 +24,10 @@ Brief step 4 "Checks required fields" + output "validation errors". Establishes 
 
 ## Acceptance Criteria
 
-- [ ] `ValidationError` carries `field`, `severity` (e.g. error/warning), and a human-readable `message`.
-- [ ] `ValidationService` accepts a list of `Validator`s and returns the merged list of `ValidationError`s for an `ExtractedInvoice`.
-- [ ] `RequiredFieldsValidator` returns one error per missing mandatory field and an empty list when all are present.
-- [ ] Severity for a missing field is `error`.
+- [x] `ValidationError` carries `field`, `severity` (e.g. error/warning), and a human-readable `message`.
+- [x] `ValidationService` accepts a list of `Validator`s and returns the merged list of `ValidationError`s for an `ExtractedInvoice`.
+- [x] `RequiredFieldsValidator` returns one error per missing mandatory field and an empty list when all are present.
+- [x] Severity for a missing field is `error`.
 
 ## Verification Steps
 
@@ -50,3 +44,11 @@ Brief step 4 "Checks required fields" + output "validation errors". Establishes 
 ## Assets
 
 - (none)
+
+## Outputs
+
+- app/DTO/ValidationError.php — readonly {field, severity, message}; JsonSerializable
+- app/Services/Validation/Validator.php — interface contract validate(ExtractedInvoice): ValidationError[]
+- app/Services/Validation/ValidationService.php — aggregates injected Validator[] and merges errors
+- app/Services/Validation/RequiredFieldsValidator.php — flags 7 mandatory fields, error severity per missing
+- tests/Unit/Validation/RequiredFieldsValidatorTest.php — 12 Pest tests
