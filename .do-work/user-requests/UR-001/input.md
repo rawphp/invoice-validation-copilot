@@ -31,7 +31,7 @@ The following decisions were agreed during a brainstorming pass and form the sco
 
 **Purpose:** Job/client showcase. Must run cleanly end-to-end and look credible; throwaway, not production architecture.
 
-**Stack:** Laravel 13 + Vue 3 + Inertia + Tailwind. **No database** — each upload runs the pipeline in-memory and renders a result page. No migrations, no history view.
+**Stack:** Laravel 13 + Vue 3 (**TypeScript**, `<script setup lang="ts">`) + Inertia + **Tailwind CSS**. **No database** — each upload runs the pipeline in-memory and renders a result page. No migrations, no history view.
 
 **Flow:** Upload (drag/drop PDF/PNG/JPG) → `POST /validate` → pipeline → Inertia renders a single result page containing all outputs. Layout stays a single-page result (not the workbench split from the mockups).
 
@@ -78,5 +78,8 @@ The following decisions were agreed during a brainstorming pass and form the sco
 
 **Q:** Is provisioning/deploying the production server + domain part of this build?
 **A:** Just make it deploy-ready. Build a clean app that works behind a domain/HTTPS (QR uses `APP_URL`, correct asset URLs, build step, env vars) and include a short deploy checklist/config — but **no actual provisioning** (Tom deploys it himself, e.g. Forge).
+
+**Q:** What frontend language/styling should the Vue side use?
+**A:** TypeScript + Tailwind CSS. Vue SFCs use `<script setup lang="ts">`; the Precision Ledger tokens are wired into the Tailwind theme config (single source of truth), not hardcoded per component. Typed DTOs/props shared across components (extracted invoice, validation errors, audit entries).
 
 **Note:** Phone-camera photos can exceed Claude's image size/dimension limits — server-side downscale/recompress before the vision call still applies (carried from ideate, independent of the LAN change).
