@@ -1,19 +1,13 @@
 # REQ-021: Corroborate Total via line items for payment-allocated invoices
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.45757
-**Claimed at:** 2026-06-24T11:43:22Z
-**Heartbeat:** 2026-06-24T11:43:22Z
-<!-- claimed-end -->
-
 **UR:** UR-004
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
 **Terminal state:**
 **Parent:** REQ-024
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed (2/2 checkpoints passed) commit:3251afc
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** M
@@ -41,12 +35,12 @@ Challenger (ideate): the suppression must be gated on the line items reconciling
 
 ## Acceptance Criteria
 
-- [ ] The brief's payment-allocated invoice (line items summing to 18.00; subtotal 357.96; GST 35.79; total 18.00) produces **zero** `error`-severity `total` validation errors.
-- [ ] That same invoice produces exactly **one** `info`-severity finding on the `total` field whose message references the payments/credits already applied.
-- [ ] A genuine Total typo — line items reconcile to neither `subtotal + GST` nor the Total (e.g. lineSum 50.00 / subtotal 357.96 / GST 35.79 / total 18.00) — still emits exactly one `error`-severity `total` error and **no** `info` finding.
-- [ ] A standard charge-only invoice where `subtotal + GST == total` (e.g. subtotal 80.00 / GST 8.00 / total 88.00, line items summing to 88.00) still passes check (c) with **no** `total` error and **no** `info` finding (no regression; no spurious info note when there is no payment).
-- [ ] An invoice with **no** line items where `subtotal + GST != total` still emits the `error`-severity `total` error (no corroboration available, so the check falls back to the subtotal+GST assertion).
-- [ ] A negative net total (credits/payments exceed charges, e.g. line items summing to −20.00 with total −20.00) where line items reconcile to the Total produces **no** `error`-severity `total` error — the `abs()` tolerance comparison handles sign — and emits one `info` finding.
+- [x] The brief's payment-allocated invoice (line items summing to 18.00; subtotal 357.96; GST 35.79; total 18.00) produces **zero** `error`-severity `total` validation errors.
+- [x] That same invoice produces exactly **one** `info`-severity finding on the `total` field whose message references the payments/credits already applied.
+- [x] A genuine Total typo — line items reconcile to neither `subtotal + GST` nor the Total (e.g. lineSum 50.00 / subtotal 357.96 / GST 35.79 / total 18.00) — still emits exactly one `error`-severity `total` error and **no** `info` finding.
+- [x] A standard charge-only invoice where `subtotal + GST == total` (e.g. subtotal 80.00 / GST 8.00 / total 88.00, line items summing to 88.00) still passes check (c) with **no** `total` error and **no** `info` finding (no regression; no spurious info note when there is no payment).
+- [x] An invoice with **no** line items where `subtotal + GST != total` still emits the `error`-severity `total` error (no corroboration available, so the check falls back to the subtotal+GST assertion).
+- [x] A negative net total (credits/payments exceed charges, e.g. line items summing to −20.00 with total −20.00) where line items reconcile to the Total produces **no** `error`-severity `total` error — the `abs()` tolerance comparison handles sign — and emits one `info` finding.
 
 ## Verification Steps
 
@@ -64,3 +58,8 @@ Challenger (ideate): the suppression must be gated on the line items reconciling
 **Data dependencies:** Reads `ExtractedInvoice` (`$subtotal`, `$gst`, `$total`, `$lineItems` of `App\DTO\LineItem`). Emits `App\DTO\ValidationError` with the existing `info` severity. No new fields.
 
 **Service dependencies:** Extends the existing `App\Services\Validation\ArithmeticValidator` only; reuses the `TOLERANCE_AUD` constant and the `$reconcilesToTotal` computation already present in check (a).
+
+## Outputs
+
+- app/Services/Validation/ArithmeticValidator.php — check (c) rewritten to corroborate the Total via the line-item sum (reusing `$reconcilesToTotal` and `TOLERANCE_AUD`); emits one `info`-severity finding for payment-allocated invoices instead of a false `error`, only errors when the Total reconciles to neither subtotal+GST nor the line items.
+- tests/Unit/Validation/ArithmeticValidatorTest.php — 6 new Pest cases covering AC1–AC6 (payment-allocated pass + info finding, genuine typo error, charge-only no findings, no-line-items fallback error, negative net total). Suite: 18 passed.

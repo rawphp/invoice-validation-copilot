@@ -1,0 +1,20 @@
+run_id: RUN-004
+req: REQ-021
+ur: UR-004
+agent_id: "Toms-MacBook-Pro.local.76519"
+model: "sonnet"
+branch: "req/REQ-021"
+started_at: "2026-06-24T11:43:22Z"
+ended_at: "2026-06-24T11:51:00Z"
+result: "done"
+review_outcome: "passed"
+proof_status: "unproven"
+cost_estimate: "tier-weighted estimate"
+cost_estimate_num: 0.20
+pr_url: ""
+commands:
+  []
+tests:
+  []
+changed_files:
+  []
