@@ -17,6 +17,7 @@
 import { ref, computed } from 'vue';
 import { useForm, Head } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import MobileQr from '@/Components/MobileQr.vue';
 import {
     ACCEPTED_MIME_TYPES,
     ACCEPTED_EXTENSIONS,
@@ -387,6 +388,11 @@ function formatBytes(bytes: number): string {
             <p class="mt-4 text-center font-mono text-[11px] uppercase tracking-[0.05em] text-outline">
                 Australian GST invoices only &nbsp;·&nbsp; AU · GST
             </p>
+
+            <!-- Mobile QR — scan to open the upload page on your phone -->
+            <div class="mt-8 flex justify-center">
+                <MobileQr />
+            </div>
         </div>
     </AppLayout>
 </template>
