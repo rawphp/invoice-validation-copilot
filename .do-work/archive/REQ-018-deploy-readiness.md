@@ -1,23 +1,17 @@
 # REQ-018: Deploy-readiness config + checklist
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T10:13:19Z
-**Heartbeat:** 2026-06-24T10:13:19Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** none
 **Entry point:**
 **Terminal state:**
 **Parent:**
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:fc2eaff
 **Criteria approved:** agent-drafted
 **Priority:** 1
 **Size:** S
-**Files:** .env.example, config/services.php, README.md
+**Files:** .env.example, README.md
 **Depends on:** REQ-016, REQ-017
 
 ## Task
@@ -30,9 +24,9 @@ Clarification: "Just make it deploy-ready — works behind a domain/HTTPS, QR us
 
 ## Acceptance Criteria
 
-- [ ] `.env.example` lists `ANTHROPIC_API_KEY` and a production-style `APP_URL` with explanatory comments.
-- [ ] README contains a deploy checklist covering env, build (`npm run build`), and config caching.
-- [ ] A production build (`APP_URL` set to an https domain) emits asset URLs under that domain (no `localhost` references in built output).
+- [x] `.env.example` lists `ANTHROPIC_API_KEY` and a production-style `APP_URL` with explanatory comments.
+- [x] README contains a deploy checklist covering env, build (`npm run build`), and config caching.
+- [x] A production build (`APP_URL` set to an https domain) emits asset URLs under that domain (no `localhost` references in built output).
 
 ## Verification Steps
 
@@ -42,3 +36,8 @@ Clarification: "Just make it deploy-ready — works behind a domain/HTTPS, QR us
 ## Assets
 
 - (none)
+
+## Outputs
+
+- .env.example — documents ANTHROPIC_API_KEY + ANTHROPIC_MODEL + production-style APP_URL (QR/asset URLs derive from it)
+- README.md — added ## Deployment checklist (env vars, composer install --no-dev, npm run build, php artisan config:cache, web root → public/, Forge note)
