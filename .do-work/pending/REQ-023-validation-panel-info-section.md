@@ -1,13 +1,7 @@
 # REQ-023: Render info-severity findings in the validation panel
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.21069
-**Claimed at:** 2026-06-24T22:37:09Z
-**Heartbeat:** 2026-06-24T22:37:09Z
-<!-- claimed-end -->
-
 **UR:** UR-004
-**Status:** in-progress
+**Status:** pending-validation
 **Created:** 2026-06-24
 **Layer:** frontend
 **Entry point:**
@@ -38,10 +32,10 @@ Challenger (ideate): the issue-count badge must not count info notes, or a corre
 
 ## Acceptance Criteria
 
-- [ ] When `errors` contains an `info`-severity finding, the panel renders a distinct "Notes" section showing that finding's field and message, styled with the `info` tone.
-- [ ] When `errors` contains only an `info`-severity finding (no `error`/`warning`), the header badge reads "0 issues" and uses the success tone (not warning/error).
-- [ ] An invoice with a blocking `error` finding still renders the Critical errors section and the badge counts that error — info notes, if any, appear only in the Notes section and are excluded from the count.
-- [ ] `npm run build` (vue-tsc type-check + vite build) completes with no type errors.
+- [x] When `errors` contains an `info`-severity finding, the panel renders a distinct "Notes" section showing that finding's field and message, styled with the `info` tone.
+- [x] When `errors` contains only an `info`-severity finding (no `error`/`warning`), the header badge reads "0 issues" and uses the success tone (not warning/error).
+- [x] An invoice with a blocking `error` finding still renders the Critical errors section and the badge counts that error — info notes, if any, appear only in the Notes section and are excluded from the count.
+- [x] `npm run build` (vue-tsc type-check + vite build) completes with no type errors.
 
 ## Verification Steps
 
@@ -55,6 +49,11 @@ Challenger (ideate): the issue-count badge must not count info notes, or a corre
 ## Post-merge validation
 
 - [ ] Visually confirm against the original UR-004 screenshot scenario — Observable outcome: the validation panel shows no red TOTAL critical error and instead shows the payment/credit note, matching the corrected expectation for the reported Vista Lawn Care invoice.
+- [ ] Run the deferred `ui` Playwright check on the Herd-served app: upload a payment-allocated invoice, reach the result page, snapshot the validation panel (environment: deferred by the worker — Herd serves the main project dir, not the worktree). Observable outcome: no Critical-errors card for the Total; a "Notes" section is visible with the payment/credit message; the header badge reads "0 issues" with success styling.
+
+## Outputs
+
+- resources/js/Components/ValidationPanel.vue — added an `infoNotes` computed (`severity === 'info'`) rendered in a new "Notes" section using the existing `info` tone (mirrors the warnings block); introduced an `issueCount` (`blockingErrors.length + warnings.length`) so info notes are excluded from the header "issues" count and an info-only invoice reads "0 issues" with success tone. `npm run build` (vue-tsc + vite) passed with 0 type errors on merged main.
 
 ## Integration
 
