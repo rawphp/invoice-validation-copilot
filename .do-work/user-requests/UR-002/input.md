@@ -8,6 +8,12 @@ layer_decisions: {}
 reqs:
   - { id: REQ-019, layer: none, integration_confidence: n/a }
 acknowledged_partials: []
+open_gaps:
+  - "REQ-019 lacks a test proving the inclusive branch still surfaces a genuine gst/total defect (false-accept widening guard)."
+  - "Supplier-facing explanation fix is a passive verification step, not an explicit acceptance criterion."
+  - "Tolerance band not truly exercised — this invoice is exact (80.00 vs 80.00); stronger test would use 79.99/80.01 vs 80.00."
+  - "Regression risk: the inclusive/exclusive OR must be additive, never a swap of the exclusive case."
+  - "Confirm ExtractionService emits line-item amounts as printed (GST-inclusive), else the inclusive branch is dead code."
 ---
 
 <!-- capture-summary-start -->
