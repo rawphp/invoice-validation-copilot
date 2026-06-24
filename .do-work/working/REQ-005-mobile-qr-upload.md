@@ -1,7 +1,13 @@
 # REQ-005: Mobile QR on upload page
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
+**Claimed at:** 2026-06-24T10:13:19Z
+**Heartbeat:** 2026-06-24T10:13:19Z
+<!-- claimed-end -->
+
 **UR:** UR-001
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** frontend
 **Entry point:**
