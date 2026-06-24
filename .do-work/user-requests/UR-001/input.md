@@ -1,8 +1,65 @@
 ---
 ur: UR-001
 received: 2026-06-24
-status: intake
+status: captured
+classification: feature
+layers_in_scope: [frontend, backend]
+layer_decisions: {}
+reqs:
+  - { id: REQ-001, layer: none, integration_confidence: n/a }
+  - { id: REQ-002, layer: frontend, integration_confidence: partial }
+  - { id: REQ-003, layer: none, integration_confidence: n/a }
+  - { id: REQ-004, layer: frontend, integration_confidence: partial }
+  - { id: REQ-005, layer: frontend, integration_confidence: partial }
+  - { id: REQ-006, layer: backend, integration_confidence: partial }
+  - { id: REQ-007, layer: backend, integration_confidence: partial }
+  - { id: REQ-008, layer: backend, integration_confidence: partial }
+  - { id: REQ-009, layer: backend, integration_confidence: partial }
+  - { id: REQ-010, layer: backend, integration_confidence: partial }
+  - { id: REQ-011, layer: backend, integration_confidence: partial }
+  - { id: REQ-012, layer: backend, integration_confidence: partial }
+  - { id: REQ-013, layer: backend, integration_confidence: partial }
+  - { id: REQ-014, layer: backend, integration_confidence: partial }
+  - { id: REQ-015, layer: backend, integration_confidence: partial }
+  - { id: REQ-016, layer: backend, integration_confidence: partial }
+  - { id: REQ-017, layer: frontend, integration_confidence: partial }
+  - { id: REQ-018, layer: none, integration_confidence: n/a }
+acknowledged_partials: []
 ---
+
+<!-- capture-summary-start -->
+## Capture summary (2026-06-24)
+
+| Item | Value |
+|---|---|
+| Classification | feature |
+| Layers in scope | frontend, backend |
+| Layer decisions | (none — all covered) |
+| REQs generated | 18 |
+
+| REQ | Layer | Integration confidence |
+|---|---|---|
+| REQ-001 scaffold-laravel-inertia-vue | none | n/a |
+| REQ-002 precision-ledger-design-tokens | frontend | partial |
+| REQ-003 validate-invoice-path | none | n/a |
+| REQ-004 upload-page-ui | frontend | partial |
+| REQ-005 mobile-qr-upload | frontend | partial |
+| REQ-006 claude-client-seam | backend | partial |
+| REQ-007 file-intake-preprocessing | backend | partial |
+| REQ-008 extraction-service-dtos | backend | partial |
+| REQ-009 validation-service-required-fields | backend | partial |
+| REQ-010 abn-validator | backend | partial |
+| REQ-011 arithmetic-validator | backend | partial |
+| REQ-012 date-validator | backend | partial |
+| REQ-013 confidence-scoring | backend | partial |
+| REQ-014 explanation-service | backend | partial |
+| REQ-015 audit-log | backend | partial |
+| REQ-016 pipeline-controller-route | backend | partial |
+| REQ-017 result-page-ui | frontend | partial |
+| REQ-018 deploy-readiness | none | n/a |
+
+> Integration confidence is `partial` across the board because this is a greenfield repo — every cited file path is a planned sibling within this same UR, internally consistent but not yet present to verify. No fabricated references.
+<!-- capture-summary-end -->
 
 # UR-001: User Request
 
