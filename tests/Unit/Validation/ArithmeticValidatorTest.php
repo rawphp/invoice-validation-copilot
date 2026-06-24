@@ -492,3 +492,191 @@ it('REQ-021 AC6: negative net total with line items corroborating produces no er
     expect($totalErrors)->toBeEmpty();
     expect($totalInfos)->toHaveCount(1);
 });
+
+// ---------------------------------------------------------------------------
+// REQ-026: Exclude adjustment lines from subtotal check (check-a OR-logic)
+// ---------------------------------------------------------------------------
+
+/**
+ * UR-006 fixture — gross-total invoice with adjustment memo rows:
+ *   Charge lines: Garden Maintenance $270.00 + Fuel Surcharge $13.50 = $283.50 (GST-inclusive)
+ *   Adjustment rows: Late Fee +$6.00 (keyword match), Payment received -$150.00 (negative amount)
+ *   Subtotal: $257.72 (ex-GST: 283.50 ÷ 1.1), GST: $25.78, Total: $283.50
+ *
+ * Full lineSum = 270.00 + 13.50 + 6.00 - 150.00 = 139.50
+ * Charge-only sum = 270.00 + 13.50 = 283.50 — reconciles to Total
+ * Expectation: zero error-severity subtotal findings; exactly one info-severity subtotal finding.
+ */
+function ur006GrossTotalInvoice(): ExtractedInvoice
+{
+    return new ExtractedInvoice(
+        supplier: 'Vista Lawn Care',
+        abn: '77 651 564 117',
+        invoiceDate: '2026-04-24',
+        dueDate: '2026-05-05',
+        lineItems: [
+            new LineItem(
+                description: 'Garden Maintenance - Regular upkeep to keep your gardens neat, healthy, and well-presented.',
+                qty: 1.0,
+                rate: 270.00,
+                amount: 270.00,
+            ),
+            new LineItem(
+                description: 'Fuel Surcharge - Temporary Fuel Fee',
+                qty: 1.0,
+                rate: 13.50,
+                amount: 13.50,
+            ),
+            new LineItem(
+                description: 'Late Fee - Late Payment Fee (12/05/2026)',
+                qty: null,
+                rate: null,
+                amount: 6.00,
+            ),
+            new LineItem(
+                description: 'Payment received (15/05/2026)',
+                qty: null,
+                rate: null,
+                amount: -150.00,
+            ),
+        ],
+        subtotal: 257.72,
+        gst: 25.78,
+        total: 283.50,
+        serviceCategory: ServiceCategory::CleaningMaintenance,
+        confidence: arithmeticConfidence(),
+    );
+}
+
+it('REQ-026 AC1: UR-006 gross-total invoice with adjustment rows produces zero error-severity subtotal findings', function () {
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate(ur006GrossTotalInvoice());
+
+    $subtotalErrors = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'subtotal' && $e->severity === 'error',
+    ));
+
+    expect($subtotalErrors)->toBeEmpty();
+});
+
+it('REQ-026 AC2: UR-006 gross-total invoice produces exactly one info-severity subtotal finding referencing balance/payments', function () {
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate(ur006GrossTotalInvoice());
+
+    $subtotalInfos = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'subtotal' && $e->severity === 'info',
+    ));
+
+    expect($subtotalInfos)->toHaveCount(1);
+    // Message must reference either "balance" or "payment" to orient the operator
+    expect(
+        str_contains(strtolower($subtotalInfos[0]->message), 'balance') ||
+        str_contains(strtolower($subtotalInfos[0]->message), 'payment')
+    )->toBeTrue();
+});
+
+it('REQ-026 AC6a: positive-amount Late Fee line is excluded from the charge-only sum via keyword classifier', function () {
+    // Invoice where ONLY the Late Fee (positive, keyword match) and a charge line are present.
+    // chargeSum = 270.00 (Garden Maintenance only); total = 276.00 (270 + 6)
+    // If Late Fee were included in chargeSum, it would be 276.00 == total; but since it's excluded,
+    // the validator emits an info note (chargeSum 270 reconciles to neither subtotal nor total).
+    // Here we test a simpler assertion: the Late Fee with amount 6.00 is an adjustment.
+    $invoice = new ExtractedInvoice(
+        supplier: 'Vista Lawn Care',
+        abn: '77 651 564 117',
+        invoiceDate: '2026-04-24',
+        dueDate: '2026-05-05',
+        lineItems: [
+            new LineItem(
+                description: 'Garden Maintenance',
+                qty: 1.0,
+                rate: 270.00,
+                amount: 270.00,
+            ),
+            new LineItem(
+                description: 'Late Fee - Late Payment Fee',
+                qty: null,
+                rate: null,
+                amount: 6.00,
+            ),
+        ],
+        subtotal: 245.45,   // 270 / 1.1 — charge-only matches total
+        gst: 24.55,
+        total: 270.00,       // charge-only sum = 270.00 reconciles exactly
+        serviceCategory: ServiceCategory::CleaningMaintenance,
+        confidence: arithmeticConfidence(),
+    );
+
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate($invoice);
+
+    // Charge-only sum (270.00) reconciles to total (270.00) → no error-severity subtotal finding
+    $subtotalErrors = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'subtotal' && $e->severity === 'error',
+    ));
+    expect($subtotalErrors)->toBeEmpty();
+});
+
+it('REQ-026 AC6b: negative-amount Payment received line is excluded from charge-only sum regardless of description', function () {
+    // Invoice where the payment line is negative — excluded by amount < 0 rule.
+    // chargeSum = 270.00 + 13.50 = 283.50 reconciles to total
+    $invoice = new ExtractedInvoice(
+        supplier: 'Vista Lawn Care',
+        abn: '77 651 564 117',
+        invoiceDate: '2026-04-24',
+        dueDate: '2026-05-05',
+        lineItems: [
+            new LineItem(description: 'Garden Maintenance', qty: 1.0, rate: 270.00, amount: 270.00),
+            new LineItem(description: 'Fuel Surcharge', qty: 1.0, rate: 13.50, amount: 13.50),
+            new LineItem(description: 'Payment received (15/05/2026)', qty: null, rate: null, amount: -150.00),
+        ],
+        subtotal: 257.72,
+        gst: 25.78,
+        total: 283.50,
+        serviceCategory: ServiceCategory::CleaningMaintenance,
+        confidence: arithmeticConfidence(),
+    );
+
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate($invoice);
+
+    $subtotalErrors = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'subtotal' && $e->severity === 'error',
+    ));
+    expect($subtotalErrors)->toBeEmpty();
+});
+
+it('REQ-026 AC4 regression: gstInclusiveInvoiceWithWrongLineItems still emits one error-severity subtotal finding', function () {
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate(gstInclusiveInvoiceWithWrongLineItems());
+
+    $subtotalErrors = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'subtotal' && $e->severity === 'error',
+    ));
+
+    expect($subtotalErrors)->toHaveCount(1);
+});
+
+it('REQ-026 AC5 regression: consistentInvoice and gstInclusiveInvoice produce zero subtotal findings of any severity', function () {
+    $validator = new ArithmeticValidator;
+
+    $errorsConsistent = $validator->validate(consistentInvoice());
+    $errorsGstInclusive = $validator->validate(gstInclusiveInvoice());
+
+    $subtotalFindingsConsistent = array_values(array_filter(
+        $errorsConsistent,
+        fn (ValidationError $e) => $e->field === 'subtotal',
+    ));
+    $subtotalFindingsGstInclusive = array_values(array_filter(
+        $errorsGstInclusive,
+        fn (ValidationError $e) => $e->field === 'subtotal',
+    ));
+
+    expect($subtotalFindingsConsistent)->toBeEmpty();
+    expect($subtotalFindingsGstInclusive)->toBeEmpty();
+});

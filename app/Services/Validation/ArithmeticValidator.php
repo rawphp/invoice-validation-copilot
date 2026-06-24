@@ -24,6 +24,13 @@ use App\DTO\ValidationError;
  *
  * Skips checks for fields that are null (missing fields are handled by
  * {@see RequiredFieldsValidator}).
+ *
+ * Check (a) is adjustment-aware: payment, credit, late fee, and other
+ * adjustment memo rows are excluded from the charge-only sum. The invoice
+ * passes check (a) when ANY of {full sum, charge-only sum} reconciles against
+ * {subtotal, total}. When only the charge-only sum reconciles (and at least
+ * one adjustment row exists), an info-severity note is emitted explaining the
+ * gap (mirrors check (c) payment-allocated info note from REQ-021).
  */
 final class ArithmeticValidator implements Validator
 {
@@ -41,6 +48,50 @@ final class ArithmeticValidator implements Validator
     private const GST_RATE = 0.10;
 
     /**
+     * Adjustment keywords (case-insensitive substring match against description).
+     * A line item whose description contains any of these is classified as an
+     * adjustment (payment / credit / refund / post-subtotal fee) and excluded
+     * from the charge-only sum used in check (a).
+     *
+     * @var string[]
+     */
+    private const ADJUSTMENT_KEYWORDS = [
+        'payment',
+        'paid',
+        'credit',
+        'refund',
+        'balance',
+        'deposit',
+        'late fee',
+        'late payment',
+        'overpayment',
+    ];
+
+    /**
+     * Returns true when the line item is an adjustment (memo row that should not
+     * count toward the charge subtotal / total reconciliation in check (a)).
+     *
+     * A line is an adjustment when EITHER:
+     *  - its amount is negative (e.g. "Payment received -$150.00"), OR
+     *  - its description contains an adjustment keyword (e.g. "Late Fee +$6.00").
+     */
+    private function isAdjustment(LineItem $item): bool
+    {
+        if (($item->amount ?? 0.0) < 0.0) {
+            return true;
+        }
+
+        $description = strtolower($item->description ?? '');
+        foreach (self::ADJUSTMENT_KEYWORDS as $keyword) {
+            if (str_contains($description, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @return ValidationError[]
      */
     public function validate(ExtractedInvoice $invoice): array
@@ -53,8 +104,17 @@ final class ArithmeticValidator implements Validator
         }
 
         // (a) Line items sum to subtotal (GST-exclusive) OR total (GST-inclusive).
+        //
         // AU invoices may present line items either way; accept either reconciliation.
-        // Only emit an error when line items reconcile against neither.
+        // Adjustment memo rows (payments, credits, late fees) are excluded from the
+        // charge-only sum — they should not be counted toward the charge reconciliation.
+        //
+        // Additive logic: the invoice passes when ANY of these reconcile within TOLERANCE_AUD:
+        //   full sum vs subtotal | full sum vs total | charge-only sum vs subtotal | charge-only sum vs total
+        //
+        // When only the charge-only sum reconciles (and adjustment lines are present):
+        //   suppress the error, emit one info-severity note explaining the balance-due gap.
+        // When neither sum reconciles: emit the existing error-severity subtotal finding.
         if (! empty($invoice->lineItems)) {
             $lineSum = array_reduce(
                 $invoice->lineItems,
@@ -62,10 +122,39 @@ final class ArithmeticValidator implements Validator
                 0.0,
             );
 
+            $adjustmentLines = array_filter($invoice->lineItems, fn (LineItem $item) => $this->isAdjustment($item));
+            $hasAdjustments = ! empty($adjustmentLines);
+
+            $chargeSum = array_reduce(
+                array_filter($invoice->lineItems, fn (LineItem $item) => ! $this->isAdjustment($item)),
+                fn (float $carry, LineItem $item) => $carry + ($item->amount ?? 0.0),
+                0.0,
+            );
+
             $reconcilesToSubtotal = abs($lineSum - $invoice->subtotal) <= self::TOLERANCE_AUD;
             $reconcilesToTotal = abs($lineSum - $invoice->total) <= self::TOLERANCE_AUD;
+            $chargeReconcilesToSubtotal = abs($chargeSum - $invoice->subtotal) <= self::TOLERANCE_AUD;
+            $chargeReconcilesToTotal = abs($chargeSum - $invoice->total) <= self::TOLERANCE_AUD;
 
-            if (! $reconcilesToSubtotal && ! $reconcilesToTotal) {
+            $fullSumReconciles = $reconcilesToSubtotal || $reconcilesToTotal;
+            $chargeOnlyReconciles = $chargeReconcilesToSubtotal || $chargeReconcilesToTotal;
+
+            if ($fullSumReconciles || $chargeOnlyReconciles) {
+                // At least one reconciliation path passes — no error.
+                // When only the charge-only path reconciles and adjustments are present,
+                // emit an informational note explaining the gap (mirrors check (c) pattern).
+                if (! $fullSumReconciles && $chargeOnlyReconciles && $hasAdjustments) {
+                    $errors[] = new ValidationError(
+                        field: 'subtotal',
+                        severity: 'info',
+                        message: sprintf(
+                            'Charges total %s; after payments/credits the outstanding balance is %s.',
+                            number_format($chargeSum, 2),
+                            number_format($lineSum, 2),
+                        ),
+                    );
+                }
+            } else {
                 $errors[] = new ValidationError(
                     field: 'subtotal',
                     severity: 'error',
