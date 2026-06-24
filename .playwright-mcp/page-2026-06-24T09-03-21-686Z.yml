@@ -1,0 +1,25 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: IV
+        - generic [ref=e8]:
+          - paragraph [ref=e9]: Precision Ledger
+          - heading "Invoice Validation Copilot" [level=1] [ref=e10]
+      - generic [ref=e11]: AU · GST
+  - main [ref=e12]:
+    - paragraph [ref=e13]: Design system & layout shell preview.
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - paragraph [ref=e16]: Precision Ledger ready
+        - heading "Design tokens wired" [level=2] [ref=e17]
+        - paragraph [ref=e18]: Surface, Deep Slate primary, Indigo secondary, Emerald and Amber are theme tokens consumed via utilities — no per-component hex. Inter drives the UI; JetBrains Mono marks technical strings.
+        - generic [ref=e19]:
+          - generic [ref=e20]: success
+          - generic [ref=e21]: warning
+          - generic [ref=e22]: error
+          - generic [ref=e23]: info
+          - generic [ref=e24]: neutral
+      - generic [ref=e25]:
+        - paragraph [ref=e26]: Structured JSON
+        - generic [ref=e27]: "{ \"supplier\": \"Acme Pty Ltd\", \"abn\": \"51 824 753 556\", \"gst\": 42.00, \"total\": 462.00 }"
