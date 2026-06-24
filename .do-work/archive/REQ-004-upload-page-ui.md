@@ -1,19 +1,13 @@
 # REQ-004: Upload page UI
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T10:01:36Z
-**Heartbeat:** 2026-06-24T10:01:36Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** frontend
 **Entry point:**
 **Terminal state:**
 **Parent:** REQ-003
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:72f43b7
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** M
@@ -30,10 +24,10 @@ Brief step 1 "Uploads an invoice PDF/image." Frontend entry for the validate pat
 
 ## Acceptance Criteria
 
-- [ ] `/` renders a drag-and-drop upload zone plus a file-picker fallback, styled with Precision Ledger tokens.
-- [ ] Selecting an unsupported type or oversized file shows an inline client-side message before submit.
-- [ ] Clicking "Validate" submits the file to POST `/validate` and shows a loading state until the response.
-- [ ] The component type-checks under `lang="ts"` and `npm run build` compiles cleanly.
+- [x] `/` renders a drag-and-drop upload zone plus a file-picker fallback, styled with Precision Ledger tokens.
+- [x] Selecting an unsupported type or oversized file shows an inline client-side message before submit.
+- [x] Clicking "Validate" submits the file to POST `/validate` and shows a loading state until the response.
+- [x] The component type-checks under `lang="ts"` and `npm run build` compiles cleanly.
 
 ## Verification Steps
 
@@ -51,3 +45,8 @@ Brief step 1 "Uploads an invoice PDF/image." Frontend entry for the validate pat
 ## Assets
 
 - .do-work/user-requests/UR-001/assets/invoice_extraction_classification/screen.png — upload/extraction visual reference
+
+## Outputs
+
+- resources/js/Pages/Upload.vue — Precision Ledger drag-and-drop upload page; client-side type/size validation; Inertia form.post('/validate', forceFormData) with loading state
+- resources/js/types/invoice.ts — shared TS types mirroring the PHP DTOs + upload constants
