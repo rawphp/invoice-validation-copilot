@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AuditPoint AI | Invoice Validation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@450&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eceef0",
+                        "secondary": "#4b41e1",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#bcc7de",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#45474c",
+                        "primary-container": "#1e293b",
+                        "tertiary": "#00190e",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-dim": "#d8dadc",
+                        "surface": "#f7f9fb",
+                        "surface-variant": "#e0e3e5",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary-fixed-dim": "#bcc7de",
+                        "on-surface": "#191c1e",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#091426",
+                        "outline": "#75777d",
+                        "primary-fixed": "#d8e3fb",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#00301e",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#0f0069",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "secondary-container": "#645efb",
+                        "on-primary-fixed": "#111c2d",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "surface-tint": "#545f73",
+                        "on-primary-container": "#8590a6",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary-fixed": "#e2dfff",
+                        "outline-variant": "#c5c6cd",
+                        "surface-bright": "#f7f9fb",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "on-tertiary-container": "#00a472",
+                        "on-tertiary-fixed": "#002113",
+                        "error": "#ba1a1a",
+                        "on-background": "#191c1e",
+                        "background": "#f7f9fb",
+                        "surface-container-low": "#f2f4f6",
+                        "inverse-surface": "#2d3133",
+                        "on-secondary-container": "#fffbff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "side-margin": "32px",
+                        "base": "4px",
+                        "xl": "40px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "column-gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "data-mono": ["13px", {"lineHeight": "18px", "fontWeight": "450"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-copilot {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(75, 65, 225, 0.1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-tab-indicator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background-color: #4b41e1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-secondary-container">
+<!-- Sidebar Navigation -->
+<aside class="flex flex-col h-full py-lg bg-surface-container-low dark:bg-primary h-screen w-64 fixed left-0 top-0 border-r border-outline-variant dark:border-primary-container z-50">
+<div class="px-lg mb-xl">
+<h1 class="font-headline-sm text-headline-sm font-black text-primary dark:text-primary-fixed">AuditPoint AI</h1>
+<p class="font-label-caps text-[10px] text-on-surface-variant opacity-70 mt-1">INVOICE ENGINE v2.4</p>
+</div>
+<nav class="flex-1 px-sm space-y-1">
+<a class="flex items-center gap-md px-md py-sm rounded transition-all duration-200 ease-in-out text-on-surface-variant dark:text-on-primary-container hover:text-secondary hover:bg-surface-container" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded transition-all duration-200 ease-in-out text-secondary dark:text-secondary-fixed font-bold bg-surface-container-highest dark:bg-primary-container" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-caps text-label-caps">Invoices</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded transition-all duration-200 ease-in-out text-on-surface-variant dark:text-on-primary-container hover:text-secondary hover:bg-surface-container" href="#">
+<span class="material-symbols-outlined">rule</span>
+<span class="font-label-caps text-label-caps">Validation Rules</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded transition-all duration-200 ease-in-out text-on-surface-variant dark:text-on-primary-container hover:text-secondary hover:bg-surface-container" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+<span class="font-label-caps text-label-caps">Audit Log</span>
+</a>
+</nav>
+<div class="px-sm mt-auto space-y-1">
+<button class="w-full mb-lg py-sm px-md bg-secondary text-white rounded font-label-caps text-label-caps hover:opacity-90 transition-opacity">
+                Upload Invoice
+            </button>
+<a class="flex items-center gap-md px-md py-sm rounded text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-caps text-label-caps">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Top AppBar -->
+<header class="flex justify-between items-center px-side-margin w-full h-16 bg-surface dark:bg-primary border-b border-outline-variant dark:border-primary-container fixed top-0 left-64 right-0 z-40" style="width: calc(100% - 16rem);">
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-sm text-secondary">
+<span class="material-symbols-outlined">arrow_back</span>
+<span class="font-body-md text-body-md cursor-pointer hover:underline">Back to Invoices</span>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant"></div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary">INV-2024-0042</h2>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm bg-surface-container-low px-md py-xs rounded border border-outline-variant">
+<span class="material-symbols-outlined text-body-md text-on-surface-variant">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-48" placeholder="Search rules..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-secondary cursor-pointer">notifications</span>
+<span class="material-symbols-outlined text-secondary cursor-pointer">help</span>
+<div class="h-8 w-8 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate financial auditor, middle-aged with short hair, wearing a neutral gray blazer and white shirt. The background is a blurred high-end office environment with cool blue tones and minimalist glass architecture, emphasizing a tone of clinical precision and financial authority." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOgN_yLxpt-i18gjGSn3fCgavB5Ml1eGlpz-koKfA5gv_lehERMVGGARTvVhZdt5lB1ZY3jOU4D4WdorO3dU6YvK-98rtiR3pFfN7asbXIHpo5ZjGwmTIfZkMx4I6Xf5MequY7ZUbsrmvjKojhXKk6BmkjhQAINEdpvdsz6hUEeN9ug7A_LXPW4XkUTUYw49twzEWofOyz-lldm_nDtpi_oWCEStWsWlfRamfHzkDe_W4e6tRZhXqojKE_thsbj1qJX1nrTlmSJ3g"/>
+</div>
+</div>
+</header>
+<!-- Main Content Grid -->
+<main class="ml-64 pt-16 h-screen flex flex-col overflow-hidden bg-surface">
+<div class="flex flex-1 overflow-hidden">
+<!-- Left Pane: Document Viewer -->
+<section class="flex-1 p-lg border-r border-outline-variant bg-surface-container-low overflow-y-auto">
+<div class="bg-white shadow-sm border border-outline-variant min-h-[1100px] w-full relative">
+<div class="p-xl">
+<!-- Simulated Invoice Header -->
+<div class="flex justify-between mb-xl">
+<div>
+<h3 class="font-display-lg text-display-lg">INVOICE</h3>
+<p class="text-on-surface-variant">Global Logistics Partners</p>
+</div>
+<div class="text-right">
+<p class="font-bold">Total Due</p>
+<div class="relative inline-block">
+<p class="text-headline-md font-bold text-error">$12,450.00</p>
+<!-- Highlighting Error Overlay -->
+<div class="absolute -inset-1 border-2 border-error border-dashed rounded pointer-events-none"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-xl mb-xl">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-xs">BILL TO</p>
+<p class="font-bold">AuditPoint Technologies</p>
+<p class="text-body-md">101 Silicon Way, Level 4<br/>San Francisco, CA 94105</p>
+</div>
+<div class="text-right">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-xs">DETAILS</p>
+<p class="text-body-md">Date: Oct 24, 2023</p>
+<p class="text-body-md">Terms: Net 30</p>
+</div>
+</div>
+<table class="w-full mb-xl">
+<thead class="border-b border-outline-variant">
+<tr>
+<th class="text-left py-md font-label-caps text-label-caps">Description</th>
+<th class="text-right py-md font-label-caps text-label-caps">Qty</th>
+<th class="text-right py-md font-label-caps text-label-caps">Rate</th>
+<th class="text-right py-md font-label-caps text-label-caps">Amount</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr>
+<td class="py-md">Cloud Infrastructure Services - Tier 4</td>
+<td class="text-right py-md">1</td>
+<td class="text-right py-md">$10,000.00</td>
+<td class="text-right py-md">$10,000.00</td>
+</tr>
+<tr>
+<td class="py-md">Security Audit &amp; Compliance Reporting</td>
+<td class="text-right py-md">1</td>
+<td class="text-right py-md">$1,200.00</td>
+<td class="text-right py-md">$1,200.00</td>
+</tr>
+</tbody>
+</table>
+<div class="w-64 ml-auto space-y-sm">
+<div class="flex justify-between">
+<p class="text-on-surface-variant">Subtotal</p>
+<p>$11,200.00</p>
+</div>
+<div class="flex justify-between relative">
+<p class="text-on-surface-variant">GST (10%)</p>
+<p class="text-error font-bold">$1,250.00</p>
+<div class="absolute -right-4 top-0 translate-x-full">
+<span class="material-symbols-outlined text-error text-[20px]" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+</div>
+<div class="border-t border-outline-variant pt-sm flex justify-between">
+<p class="font-bold">Total</p>
+<p class="font-bold">$12,450.00</p>
+</div>
+</div>
+</div>
+<!-- AI Highlight Overlay -->
+<div class="absolute top-1/2 right-4 w-72 glass-copilot p-lg rounded-xl shadow-lg border-l-4 border-error">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="font-label-caps text-label-caps text-error">CRITICAL ERROR</span>
+</div>
+<span class="text-[10px] font-bold bg-error-container text-on-error-container px-sm py-[2px] rounded">98% CONFIDENCE</span>
+</div>
+<p class="font-headline-sm text-[16px] font-bold mb-xs">GST Calculation Mismatch</p>
+<p class="text-body-md text-on-surface-variant">The GST amount ($1,250.00) provided doesn't align with the line items total ($11,200.00 * 10% = $1,120.00). Please verify the rates.</p>
+<div class="mt-md flex gap-sm">
+<button class="bg-secondary text-white px-md py-xs rounded-full text-[12px] font-bold">Fix Values</button>
+<button class="bg-transparent border border-outline px-md py-xs rounded-full text-[12px] font-bold">Ignore</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Pane: Workbench -->
+<section class="w-[480px] flex flex-col bg-surface overflow-hidden">
+<!-- Tab Header -->
+<div class="px-lg pt-lg border-b border-outline-variant relative">
+<div class="flex gap-lg">
+<button class="pb-md px-xs text-secondary font-bold relative transition-colors duration-200" id="tab-errors" onclick="switchTab('errors')">
+                            Validation Errors
+                            <span class="inline-flex items-center justify-center bg-error text-white text-[10px] w-4 h-4 rounded-full ml-1">1</span>
+</button>
+<button class="pb-md px-xs text-on-surface-variant font-medium transition-colors duration-200" id="tab-json" onclick="switchTab('json')">
+                            Structured Data (JSON)
+                        </button>
+<button class="pb-md px-xs text-on-surface-variant font-medium transition-colors duration-200" id="tab-rules" onclick="switchTab('rules')">
+                            Validation Rules
+                        </button>
+</div>
+<div class="active-tab-indicator w-32" id="tab-indicator"></div>
+</div>
+<!-- Tab Content -->
+<div class="flex-1 overflow-y-auto p-lg">
+<!-- Errors View (Default) -->
+<div class="space-y-lg" id="view-errors">
+<div class="bg-error-container/30 border-l-4 border-error p-lg rounded">
+<h4 class="font-bold text-error mb-sm flex items-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">block</span>
+                                Calculation Error
+                            </h4>
+<p class="text-body-md font-bold mb-xs">GST does not match Total</p>
+<p class="text-body-md text-on-surface-variant mb-md italic">"The GST amount provided doesn't align with the line items total. Please verify the rates."</p>
+<div class="flex items-center gap-md">
+<div class="bg-white/50 p-sm rounded border border-error/20 flex-1">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Expected</p>
+<p class="font-data-mono text-secondary">$1,120.00</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant">drag_handle</span>
+<div class="bg-white/50 p-sm rounded border border-error/20 flex-1">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Actual</p>
+<p class="font-data-mono text-error">$1,250.00</p>
+</div>
+</div>
+</div>
+<div class="space-y-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant pb-xs">PASSING CHECKS (8)</h4>
+<div class="flex items-center justify-between p-md bg-white border border-outline-variant rounded">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-tertiary-container">check_circle</span>
+<span class="font-body-md">ABN Check (Global Logistics)</span>
+</div>
+<span class="text-[10px] font-bold text-on-tertiary-container bg-tertiary-fixed/30 px-sm py-[2px] rounded uppercase">MATCHED</span>
+</div>
+<div class="flex items-center justify-between p-md bg-white border border-outline-variant rounded opacity-80">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-tertiary-container">check_circle</span>
+<span class="font-body-md">Total Arithmetic Match</span>
+</div>
+<span class="text-[10px] font-bold text-on-tertiary-container bg-tertiary-fixed/30 px-sm py-[2px] rounded uppercase">MATCHED</span>
+</div>
+<div class="flex items-center justify-between p-md bg-white border border-outline-variant rounded opacity-80">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-tertiary-container">check_circle</span>
+<span class="font-body-md">Required Fields (Date, Terms, ID)</span>
+</div>
+<span class="text-[10px] font-bold text-on-tertiary-container bg-tertiary-fixed/30 px-sm py-[2px] rounded uppercase">MATCHED</span>
+</div>
+</div>
+</div>
+<!-- JSON View (Hidden by default) -->
+<div class="hidden" id="view-json">
+<div class="bg-primary p-lg rounded-lg font-data-mono text-data-mono text-on-primary-container overflow-x-auto">
+<pre>{
+  <span class="text-tertiary-fixed-dim">"invoice_id"</span>: "INV-2024-0042",
+  <span class="text-tertiary-fixed-dim">"vendor"</span>: {
+    "name": "Global Logistics Partners",
+    "abn": "12 345 678 910",
+    "address": "99 Freight Ave, Sydney"
+  },
+  <span class="text-tertiary-fixed-dim">"line_items"</span>: [
+    {
+      "id": 1,
+      "desc": "Cloud Infrastructure",
+      "amount": 10000.00
+    },
+    {
+      "id": 2,
+      "desc": "Security Audit",
+      "amount": 1200.00
+    }
+  ],
+  <span class="text-tertiary-fixed-dim">"tax"</span>: {
+    "gst_rate": 0.10,
+    <span class="text-error bg-error-container/20">"gst_amount": 1250.00</span>,
+    "mismatch": true
+  },
+  <span class="text-tertiary-fixed-dim">"total"</span>: 12450.00
+}
+</pre>
+</div>
+</div>
+<!-- Rules View (Hidden by default) -->
+<div class="hidden space-y-sm" id="view-rules">
+<div class="p-md bg-white border border-outline-variant rounded flex flex-col gap-sm">
+<div class="flex justify-between items-center">
+<span class="font-bold text-body-md">ABN Check</span>
+<input checked="" class="text-secondary focus:ring-secondary rounded-sm" type="checkbox"/>
+</div>
+<p class="text-xs text-on-surface-variant">Cross-references vendor ABN against the national business register for active status.</p>
+</div>
+<div class="p-md bg-white border border-outline-variant rounded flex flex-col gap-sm">
+<div class="flex justify-between items-center">
+<span class="font-bold text-body-md">GST Threshold Audit</span>
+<input checked="" class="text-secondary focus:ring-secondary rounded-sm" type="checkbox"/>
+</div>
+<p class="text-xs text-on-surface-variant">Verifies that GST calculation matches line items total within a 0.01% tolerance.</p>
+</div>
+<div class="p-md bg-white border border-outline-variant rounded flex flex-col gap-sm">
+<div class="flex justify-between items-center">
+<span class="font-bold text-body-md">Duplicate Invoice ID</span>
+<input checked="" class="text-secondary focus:ring-secondary rounded-sm" type="checkbox"/>
+</div>
+<p class="text-xs text-on-surface-variant">Scans historical ledger to ensure invoice ID hasn't been paid previously.</p>
+</div>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="p-lg border-t border-outline-variant bg-surface-container-low flex gap-md">
+<button class="flex-1 py-md bg-white border border-outline text-on-surface-variant font-bold rounded hover:bg-surface transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">close</span>
+                        Reject with Explanation
+                    </button>
+<button class="flex-1 py-md bg-secondary text-white font-bold rounded opacity-50 cursor-not-allowed flex items-center justify-center gap-sm" disabled="">
+<span class="material-symbols-outlined text-[20px]">done</span>
+                        Approve
+                    </button>
+</div>
+</section>
+</div>
+</main>
+<!-- Micro-interaction Scripts -->
+<script>
+        function switchTab(tab) {
+            // UI elements
+            const tabs = ['errors', 'json', 'rules'];
+            const indicator = document.getElementById('tab-indicator');
+            const tabButtons = {
+                errors: document.getElementById('tab-errors'),
+                json: document.getElementById('tab-json'),
+                rules: document.getElementById('tab-rules')
+            };
+
+            // Reset all
+            tabs.forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                tabButtons[t].classList.remove('text-secondary', 'font-bold');
+                tabButtons[t].classList.add('text-on-surface-variant', 'font-medium');
+            });
+
+            // Set active
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            tabButtons[tab].classList.remove('text-on-surface-variant', 'font-medium');
+            tabButtons[tab].classList.add('text-secondary', 'font-bold');
+
+            // Move indicator
+            const btn = tabButtons[tab];
+            indicator.style.width = `${btn.offsetWidth}px`;
+            indicator.style.left = `${btn.offsetLeft}px`;
+        }
+
+        // Initialize indicator position
+        window.onload = () => {
+            switchTab('errors');
+        };
+    </script>
+</body></html>

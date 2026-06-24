@@ -33,7 +33,9 @@ The following decisions were agreed during a brainstorming pass and form the sco
 
 **Stack:** Laravel 13 + Vue 3 + Inertia + Tailwind. **No database** — each upload runs the pipeline in-memory and renders a result page. No migrations, no history view.
 
-**Flow:** Upload (drag/drop PDF/PNG/JPG) → `POST /validate` → pipeline → Inertia renders a single result page containing all outputs.
+**Flow:** Upload (drag/drop PDF/PNG/JPG) → `POST /validate` → pipeline → Inertia renders a single result page containing all outputs. Layout stays a single-page result (not the workbench split from the mockups).
+
+**Upload via mobile (QR):** The upload page shows a QR code that a mobile device can scan to open the same upload page on the phone. The phone is **standalone** — it opens the upload page, uploads via its camera, and sees its own result on the phone. No session pairing, no realtime, no shared state (keeps the in-memory model intact). The QR encodes the server's **LAN address** (e.g. `http://192.168.x.x:8000/...`), not `localhost`, so the phone can reach the desktop server on the same network; a small runtime helper detects the LAN IP. Demo assumption: phone and laptop are on the same network.
 
 **Backend pipeline (isolated, individually testable units):**
 
@@ -57,3 +59,5 @@ The following decisions were agreed during a brainstorming pass and form the sco
 **Testing:** Pest unit tests on all four deterministic validators (known valid/invalid ABNs, arithmetic, dates). Feature test on the pipeline with the **Claude client mocked behind an interface** so tests don't hit the network. Frontend kept thin.
 
 **Error handling:** file type/size guard · Claude API failure → friendly error, no crash · non-invoice image → low confidence + "couldn't extract a valid invoice" flag.
+
+**Visual design:** Adopt the **Precision Ledger** design system in `assets/precision_ledger/DESIGN.md` (Deep Slate + Indigo palette, Inter + JetBrains Mono, soft 0.25rem shapes, status pills, dark JSON block even in light mode, card/outline elevation). The four example screens in `assets/` are **inspiration and vision reference only** — borrow component ideas from screens 1 (extraction) and 2 (validation review): per-field confidence chips, passing-checks list, critical-error detail card, supplier-friendly explanation card, status pills. **Do not build** screens 3 (finance dashboard) or 4 (cross-record audit log) — they require persistence/multi-user and are out of scope. Stick to the agreed single-invoice, in-memory scope.

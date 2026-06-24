@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Audit Log | AuditPoint AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@450&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eceef0",
+                        "secondary": "#4b41e1",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#bcc7de",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#45474c",
+                        "primary-container": "#1e293b",
+                        "tertiary": "#00190e",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-dim": "#d8dadc",
+                        "surface": "#f7f9fb",
+                        "surface-variant": "#e0e3e5",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary-fixed-dim": "#bcc7de",
+                        "on-surface": "#191c1e",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#091426",
+                        "outline": "#75777d",
+                        "primary-fixed": "#d8e3fb",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#00301e",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#0f0069",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "secondary-container": "#645efb",
+                        "on-primary-fixed": "#111c2d",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "surface-tint": "#545f73",
+                        "on-primary-container": "#8590a6",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary-fixed": "#e2dfff",
+                        "outline-variant": "#c5c6cd",
+                        "surface-bright": "#f7f9fb",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "on-tertiary-container": "#00a472",
+                        "on-tertiary-fixed": "#002113",
+                        "error": "#ba1a1a",
+                        "on-background": "#191c1e",
+                        "background": "#f7f9fb",
+                        "surface-container-low": "#f2f4f6",
+                        "inverse-surface": "#2d3133",
+                        "on-secondary-container": "#fffbff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "side-margin": "32px",
+                        "base": "4px",
+                        "xl": "40px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "column-gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "data-mono": ["13px", {"lineHeight": "18px", "fontWeight": "450"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .workbench-layout {
+            display: grid;
+            grid-template-columns: 256px 1fr;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased">
+<div class="workbench-layout">
+<!-- SideNavBar Component -->
+<aside class="bg-surface-container-low border-r border-outline-variant h-screen w-64 fixed left-0 top-0 flex flex-col py-lg z-50">
+<div class="px-md mb-xl">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-secondary text-headline-sm" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<h1 class="font-headline-sm text-headline-sm font-black text-primary">Invoice Engine</h1>
+</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Precision Audit v2.4</p>
+</div>
+<nav class="flex-1 px-sm space-y-xs">
+<a class="flex items-center gap-md px-md py-sm font-label-caps text-label-caps text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm font-label-caps text-label-caps text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">description</span>
+<span>Invoices</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm font-label-caps text-label-caps text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">rule</span>
+<span>Validation Rules</span>
+</a>
+<!-- Active Item -->
+<a class="flex items-center gap-md px-md py-sm font-label-caps text-label-caps text-secondary font-bold bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment_turned_in</span>
+<span>Audit Log</span>
+</a>
+</nav>
+<div class="px-md mt-lg">
+<button class="w-full bg-secondary text-on-secondary py-md rounded-lg font-label-caps text-label-caps flex items-center justify-center gap-sm active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-sm">cloud_upload</span>
+                    Upload Invoice
+                </button>
+</div>
+<div class="mt-auto px-sm pt-lg border-t border-outline-variant space-y-xs">
+<a class="flex items-center gap-md px-md py-sm font-label-caps text-label-caps text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm font-label-caps text-label-caps text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="col-start-2 overflow-x-hidden">
+<!-- TopNavBar Component -->
+<header class="bg-surface border-b border-outline-variant h-16 flex justify-between items-center px-side-margin w-full sticky top-0 z-40">
+<div class="flex items-center gap-lg flex-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">AuditPoint AI</span>
+<div class="relative w-96 max-w-full">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-xl pr-md py-xs font-body-md text-body-md focus:ring-2 focus:ring-secondary/20" placeholder="Search audit logs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-sm rounded-full hover:bg-surface-container-low transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-sm rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">help</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-xs"></div>
+<button class="flex items-center gap-sm font-body-md text-body-md text-secondary font-bold hover:bg-surface-container-low px-md py-sm rounded-lg transition-colors">
+                        Support
+                    </button>
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary text-xs font-bold overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate financial auditor with a friendly expression, wearing a clean white shirt and dark blazer, set against a blurred modern office background with neutral gray tones and soft natural light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB66tqasyO20MxINW5NRUiLJQ1bOE3PtVibBeFHvQm1cp-hsyYXwO4dlaqI4CVFuXZZCHgqySIbH8MkvBccohShqHd72DTvhLTPu4vonQoK28ldWXtaFLbUD31_OXQFvhhksA1BwHUx4cunXlDZdIDNHBJaE-I_yeBUHOc6IETj_s2fJuitdeGnD3P6tVa6zBOmPvsfi_Clf-hrEz0ia0eU_uinAvsjs3PouQpy_0Gb07eD_efPTVItwdRGOwYWGeVMxjLKENGsGuc"/>
+</div>
+</div>
+</header>
+<!-- Audit Content -->
+<div class="p-side-margin">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-lg mb-xl">
+<div>
+<h2 class="font-display-lg text-display-lg text-primary mb-xs">System Audit Log</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Real-time immutable history of all processing, approvals, and system interactions.</p>
+</div>
+<!-- Filters -->
+<div class="flex items-center gap-md flex-wrap">
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase opacity-70">Date Range</label>
+<div class="flex items-center bg-white border border-outline-variant rounded px-sm py-xs gap-sm">
+<span class="material-symbols-outlined text-sm text-outline">calendar_today</span>
+<input class="border-none p-0 focus:ring-0 font-body-md text-body-md w-44" type="text" value="Oct 24, 2023 - Oct 31, 2023"/>
+</div>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase opacity-70">Action Type</label>
+<select class="bg-white border border-outline-variant rounded px-sm py-xs font-body-md text-body-md focus:ring-secondary min-w-[160px]">
+<option>All Actions</option>
+<option>AI Extracted</option>
+<option>Admin Approved</option>
+<option>Supplier Resubmitted</option>
+<option>Validation Failure</option>
+</select>
+</div>
+<button class="bg-surface-container-high hover:bg-surface-container-highest h-[38px] mt-auto px-md rounded font-label-caps text-label-caps text-primary flex items-center gap-sm transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+                            Export CSV
+                        </button>
+</div>
+</div>
+<!-- Audit Table Card -->
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-lg py-md font-label-caps text-label-caps text-on-surface-variant uppercase">Timestamp</th>
+<th class="px-lg py-md font-label-caps text-label-caps text-on-surface-variant uppercase">User / System</th>
+<th class="px-lg py-md font-label-caps text-label-caps text-on-surface-variant uppercase">Action</th>
+<th class="px-lg py-md font-label-caps text-label-caps text-on-surface-variant uppercase">Entity ID</th>
+<th class="px-lg py-md font-label-caps text-label-caps text-on-surface-variant uppercase text-right">Data Provenance</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface transition-colors group">
+<td class="px-lg py-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-primary">Oct 31, 2023</span>
+<span class="text-xs text-on-surface-variant font-data-mono">14:32:11.042 UTC</span>
+</div>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-sm">
+<div class="w-6 h-6 rounded bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-primary-fixed" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<span class="font-body-md text-body-md font-medium text-primary">AI Engine v2.4</span>
+</div>
+</td>
+<td class="px-lg py-lg">
+<div class="inline-flex items-center gap-xs px-sm py-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-label-caps text-[10px] font-bold">
+<span class="material-symbols-outlined text-xs">auto_awesome</span>
+                                            AI EXTRACTED
+                                        </div>
+</td>
+<td class="px-lg py-lg">
+<span class="font-data-mono text-data-mono text-on-surface-variant">INV-2023-8841</span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="text-secondary hover:underline font-body-md text-body-md inline-flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm">link</span>
+                                            View Source PDF
+                                        </button>
+</td>
+</tr>
+<!-- Row 2 (Warning State) -->
+<tr class="hover:bg-surface transition-colors border-l-4 border-l-error bg-error-container/10">
+<td class="px-lg py-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-primary">Oct 31, 2023</span>
+<span class="text-xs text-on-surface-variant font-data-mono">14:28:45.912 UTC</span>
+</div>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-sm">
+<div class="w-6 h-6 rounded bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small avatar image of a man with short dark hair and glasses, representing a systems administrator, in a clean minimalist style with a soft light-blue background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTLwhAutQ4UP6QU20j0H6DA-5ojRIJtJenvlQzyYAfFwwfWnBq24ig6n6oQQvbhTqmDse1_oBvHseS9rQ4RL5xCLCYsGUdTlL9LSigdkLrzvhjaSOaxz-Ti5i-2ulZcfDgrVklJdnGhuCp8CTzS8zqf_hGWJwHg9DzOnb0BbnVUK2vMVVQvruLPq76z4mtxs8hTxsukpWFlfLVP9haUmsNyR22cnblux7m3Yo5CwItxv4N4mqgyfi_0qlWylTsO2txG1HeJPP6peQ"/>
+</div>
+<span class="font-body-md text-body-md font-medium text-primary">Sarah Jenkins</span>
+</div>
+</td>
+<td class="px-lg py-lg">
+<div class="inline-flex items-center gap-xs px-sm py-1 rounded bg-error-container text-on-error-container font-label-caps text-[10px] font-bold">
+<span class="material-symbols-outlined text-xs">block</span>
+                                            REJECTED
+                                        </div>
+</td>
+<td class="px-lg py-lg">
+<span class="font-data-mono text-data-mono text-on-surface-variant">INV-2023-8839</span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="text-secondary hover:underline font-body-md text-body-md inline-flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm">history</span>
+                                            Audit Trail
+                                        </button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface transition-colors">
+<td class="px-lg py-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-primary">Oct 31, 2023</span>
+<span class="text-xs text-on-surface-variant font-data-mono">14:15:02.110 UTC</span>
+</div>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-sm">
+<div class="w-6 h-6 rounded bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-on-secondary" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<span class="font-body-md text-body-md font-medium text-primary">Supplier Portal</span>
+</div>
+</td>
+<td class="px-lg py-lg">
+<div class="inline-flex items-center gap-xs px-sm py-1 rounded bg-surface-container-highest text-on-surface-variant font-label-caps text-[10px] font-bold">
+<span class="material-symbols-outlined text-xs">upload_file</span>
+                                            RESUBMITTED
+                                        </div>
+</td>
+<td class="px-lg py-lg">
+<span class="font-data-mono text-data-mono text-on-surface-variant">INV-2023-8790</span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="text-secondary hover:underline font-body-md text-body-md inline-flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm">article</span>
+                                            Original Doc
+                                        </button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface transition-colors">
+<td class="px-lg py-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-primary">Oct 31, 2023</span>
+<span class="text-xs text-on-surface-variant font-data-mono">13:59:22.485 UTC</span>
+</div>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-sm">
+<div class="w-6 h-6 rounded bg-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-on-tertiary-fixed" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<span class="font-body-md text-body-md font-medium text-primary">Compliance Bot</span>
+</div>
+</td>
+<td class="px-lg py-lg">
+<div class="inline-flex items-center gap-xs px-sm py-1 rounded bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-caps text-[10px] font-bold">
+<span class="material-symbols-outlined text-xs">check_circle</span>
+                                            VALIDATED
+                                        </div>
+</td>
+<td class="px-lg py-lg">
+<span class="font-data-mono text-data-mono text-on-surface-variant">INV-2023-8840</span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="text-secondary hover:underline font-body-md text-body-md inline-flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm">schema</span>
+                                            Data View
+                                        </button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface transition-colors">
+<td class="px-lg py-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-primary">Oct 31, 2023</span>
+<span class="text-xs text-on-surface-variant font-data-mono">13:42:11.001 UTC</span>
+</div>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-sm">
+<div class="w-6 h-6 rounded bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged woman with blonde hair in a modern workspace, used as a user avatar for an accounting platform. Minimalist lighting, high-key white background, professional and authoritative tone." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_pktI7A01y-o2KMDStwGbATqD1xPmShLEFIFN_-pu_ZEWKdGyoHdoOTfu8k3OqUMd9AosrydVFh4ThCTd5L4RMxgYOdx6jXKusfL-UijCDBt1bbpARvOBNBeX3-_D6Fd77QCoE5cZc5-t0rMeseFv5FCZnKGyOFzLV9u4A_pbu4uj4S7R_W8hSNN14k-bt1nLBMow145j7xRuy73LMAbV0PW_vaCXDBuuU6HydrvpdASQYvAAdApmGVvtJoVHjrFN7Uz8Nk2wx6I"/>
+</div>
+<span class="font-body-md text-body-md font-medium text-primary">Marc Chen</span>
+</div>
+</td>
+<td class="px-lg py-lg">
+<div class="inline-flex items-center gap-xs px-sm py-1 rounded bg-secondary-container text-on-secondary font-label-caps text-[10px] font-bold">
+<span class="material-symbols-outlined text-xs">gavel</span>
+                                            APPROVED
+                                        </div>
+</td>
+<td class="px-lg py-lg">
+<span class="font-data-mono text-data-mono text-on-surface-variant">INV-2023-8835</span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="text-secondary hover:underline font-body-md text-body-md inline-flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm">assignment</span>
+                                            Report
+                                        </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-lg py-md border-t border-outline-variant bg-surface-container-low flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Showing 1-15 of 1,248 entries</span>
+<div class="flex gap-xs">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-white text-on-surface-variant disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-secondary bg-secondary text-on-secondary text-sm font-bold">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-white text-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-white text-sm">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-white text-on-surface-variant">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- AI Insight Overlay (Bento Component) -->
+<div class="mt-xl grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="glass-panel p-lg rounded-xl flex flex-col gap-md">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">insights</span>
+</div>
+<span class="font-label-caps text-[10px] bg-secondary/10 text-secondary px-sm py-0.5 rounded-full font-bold">AI INSIGHT</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-xs">Anomaly Detected</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">System identified a 15% increase in "Supplier Resubmitted" actions this week. Recommend reviewing validation rule 4.2.</p>
+</div>
+<div class="mt-auto">
+<div class="flex justify-between items-center text-xs font-label-caps text-on-surface-variant mb-base">
+<span>Confidence Score</span>
+<span class="text-secondary font-bold">94%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full" style="width: 94%"></div>
+</div>
+</div>
+</div>
+<div class="bg-primary text-white p-lg rounded-xl flex flex-col justify-between relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="font-headline-sm text-headline-sm mb-sm">Audit Health</h3>
+<p class="font-body-md text-body-md opacity-70">Infrastructure is processing 4.2 invoices per second with 100% data integrity verified by blockchain ledger.</p>
+</div>
+<div class="flex items-end gap-sm relative z-10">
+<span class="text-display-lg font-black leading-none">99.9%</span>
+<span class="font-label-caps text-xs opacity-60 mb-1">UPTIME</span>
+</div>
+<!-- Abstract Background Decoration -->
+<div class="absolute -right-4 -bottom-4 w-32 h-32 bg-secondary/20 rounded-full blur-3xl"></div>
+</div>
+<div class="border border-outline-variant p-lg rounded-xl flex flex-col">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant opacity-60 uppercase mb-md">Quick Filter Presets</h3>
+<div class="space-y-sm">
+<button class="w-full flex items-center justify-between p-sm rounded border border-outline-variant hover:border-secondary transition-colors group">
+<span class="font-body-md text-body-md text-primary">Failed Validations</span>
+<span class="font-data-mono text-xs bg-surface-container text-on-surface-variant px-sm rounded">12</span>
+</button>
+<button class="w-full flex items-center justify-between p-sm rounded border border-outline-variant hover:border-secondary transition-colors group">
+<span class="font-body-md text-body-md text-primary">Pending Human Review</span>
+<span class="font-data-mono text-xs bg-surface-container text-on-surface-variant px-sm rounded">48</span>
+</button>
+<button class="w-full flex items-center justify-between p-sm rounded border border-outline-variant hover:border-secondary transition-colors group">
+<span class="font-body-md text-body-md text-primary">System Overrides</span>
+<span class="font-data-mono text-xs bg-surface-container text-on-surface-variant px-sm rounded">0</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Flash interaction
+                row.classList.add('bg-secondary/5');
+                setTimeout(() => {
+                    row.classList.remove('bg-secondary/5');
+                }, 400);
+            });
+        });
+
+        // Simple search filter simulation
+        const searchInput = document.querySelector('input[placeholder="Search audit logs..."]');
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+    </script>
+</body></html>
