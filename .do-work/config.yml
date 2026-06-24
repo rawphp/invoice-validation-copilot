@@ -1,0 +1,13 @@
+# do-work configuration
+# Edit this file to customize agent behavior.
+# Full schema and defaults: agents/config.md (canonical template)
+
+project:
+  name: "invoice-validation-copilot"
+
+# Declare your project's layers, e.g. [frontend, backend] for a web app.
+# Capture and verify use this list to gap-check briefs.
+layers: [frontend, backend]
+
+test:
+  suite_command: "./vendor/bin/pest"
