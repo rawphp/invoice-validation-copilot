@@ -52,7 +52,9 @@ final class ArithmeticValidator implements Validator
             return $errors;
         }
 
-        // (a) Line items sum to subtotal — only checked when line items exist.
+        // (a) Line items sum to subtotal (GST-exclusive) OR total (GST-inclusive).
+        // AU invoices may present line items either way; accept either reconciliation.
+        // Only emit an error when line items reconcile against neither.
         if (! empty($invoice->lineItems)) {
             $lineSum = array_reduce(
                 $invoice->lineItems,
@@ -60,7 +62,10 @@ final class ArithmeticValidator implements Validator
                 0.0,
             );
 
-            if (abs($lineSum - $invoice->subtotal) > self::TOLERANCE_AUD) {
+            $reconcilesToSubtotal = abs($lineSum - $invoice->subtotal) <= self::TOLERANCE_AUD;
+            $reconcilesToTotal = abs($lineSum - $invoice->total) <= self::TOLERANCE_AUD;
+
+            if (! $reconcilesToSubtotal && ! $reconcilesToTotal) {
                 $errors[] = new ValidationError(
                     field: 'subtotal',
                     severity: 'error',
