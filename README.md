@@ -121,12 +121,43 @@ faked, so tests run offline.
 
 ## Deployment
 
-The app is deploy-ready for a domain over HTTPS (e.g. Laravel Forge); no
-provisioning is included here.
+The app is deploy-ready for a domain over HTTPS. Tom provisions and deploys
+himself (e.g. Laravel Forge) — no provisioning scripts are included here.
 
-- Set `APP_URL` to the public HTTPS URL — the mobile-upload QR encodes this, so
-  it must be correct for the phone to reach the app.
-- Set `APP_ENV=production`, `APP_DEBUG=false`, and a real `APP_KEY`.
-- Provide `ANTHROPIC_API_KEY`.
-- Build assets: `npm run build`.
-- No database to migrate (`DB_CONNECTION=null`); `QUEUE_CONNECTION=sync`.
+### Required environment variables
+
+| Variable | Notes |
+|---|---|
+| `APP_URL` | Full public HTTPS URL, e.g. `https://invoices.example.com`. The mobile-upload QR code **and** all Vite asset URLs derive from this — it must be correct. |
+| `APP_KEY` | Generate once: `php artisan key:generate`. Never reuse across environments. |
+| `APP_ENV` | Set to `production`. |
+| `APP_DEBUG` | Set to `false` in production. |
+| `ANTHROPIC_API_KEY` | Your Anthropic API key (`sk-ant-…`). Required for both LLM calls. |
+| `ANTHROPIC_MODEL` | Optional. Defaults to `claude-opus-4-8`; override to pin a different model version. |
+
+### Deploy checklist
+
+```bash
+# 1. Install PHP dependencies (no dev packages)
+composer install --no-dev --optimize-autoloader
+
+# 2. Copy and populate the environment file
+cp .env.example .env
+# Edit .env: set APP_URL, APP_KEY, APP_ENV, APP_DEBUG, ANTHROPIC_API_KEY
+
+# 3. Generate the app key (skip if already set)
+php artisan key:generate
+
+# 4. Build frontend assets (resolves asset URLs under APP_URL)
+npm install
+npm run build
+
+# 5. Cache config for production performance
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+Point the web server root at the `public/` directory. No database migrations
+are needed (`DB_CONNECTION=null`); sessions, cache, and queue use non-DB
+drivers out of the box.
