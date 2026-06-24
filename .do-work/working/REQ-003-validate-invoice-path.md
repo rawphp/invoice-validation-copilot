@@ -1,7 +1,13 @@
 # REQ-003: [PATH] Validate an invoice end-to-end
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
+**Claimed at:** 2026-06-24T10:20:49Z
+**Heartbeat:** 2026-06-24T10:20:49Z
+<!-- claimed-end -->
+
 **UR:** UR-001
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** none
 **Entry point:** User visits `/`, drags/drops or selects an invoice PDF/PNG/JPG, and submits the form (POST `/validate`). A mobile user reaches the same upload page by scanning the on-page QR code (public `APP_URL`).
