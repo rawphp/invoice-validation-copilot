@@ -1,7 +1,13 @@
 # REQ-026: Exclude adjustment lines from the subtotal line-item check
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.53586
+**Claimed at:** 2026-06-24T23:22:36Z
+**Heartbeat:** 2026-06-24T23:22:36Z
+<!-- claimed-end -->
+
 **UR:** UR-006
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-25
 **Layer:** none
 **Entry point:**
