@@ -1,7 +1,13 @@
 # REQ-001: Scaffold Laravel 13 + Inertia + Vue 3 (TS) + Tailwind + Pest
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
+**Claimed at:** 2026-06-24T08:45:42Z
+**Heartbeat:** 2026-06-24T08:45:42Z
+<!-- claimed-end -->
+
 **UR:** UR-001
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** none
 **Entry point:**
