@@ -1,19 +1,13 @@
 # REQ-019: Accept GST-inclusive line items in subtotal check
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.76142
-**Claimed at:** 2026-06-24T10:47:20Z
-**Heartbeat:** 2026-06-24T10:47:20Z
-<!-- claimed-end -->
-
 **UR:** UR-002
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** none
 **Entry point:**
 **Terminal state:**
 **Parent:**
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:8af30ab
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** S
@@ -36,10 +30,10 @@ Connector note (ideate): `ExplanationService` consumes the `ValidationError[]`, 
 
 ## Acceptance Criteria
 
-- [ ] The brief's GST-inclusive invoice (line items summing to 80.00; subtotal 72.73; GST 7.27; total 80.00) produces **zero** `subtotal`-field validation errors.
-- [ ] A GST-exclusive invoice (line items sum equals the subtotal, e.g. lineSum 80.00 / subtotal 80.00 / GST 8.00 / total 88.00) still passes check (a) with no `subtotal` error — no regression to the existing exclusive case.
-- [ ] An invoice whose line items reconcile against **neither** the subtotal nor the total (e.g. lineSum 90.00 / subtotal 72.73 / total 80.00) still emits exactly one `subtotal` error.
-- [ ] The line-items-vs-total comparison uses the existing `TOLERANCE_AUD` (0.02) so cent-rounding from the inclusive arithmetic (80 ÷ 11 = 7.2727) does not false-flag at the boundary.
+- [x] The brief's GST-inclusive invoice (line items summing to 80.00; subtotal 72.73; GST 7.27; total 80.00) produces **zero** `subtotal`-field validation errors.
+- [x] A GST-exclusive invoice (line items sum equals the subtotal, e.g. lineSum 80.00 / subtotal 80.00 / GST 8.00 / total 88.00) still passes check (a) with no `subtotal` error — no regression to the existing exclusive case.
+- [x] An invoice whose line items reconcile against **neither** the subtotal nor the total (e.g. lineSum 90.00 / subtotal 72.73 / total 80.00) still emits exactly one `subtotal` error.
+- [x] The line-items-vs-total comparison uses the existing `TOLERANCE_AUD` (0.02) so cent-rounding from the inclusive arithmetic (80 ÷ 11 = 7.2727) does not false-flag at the boundary.
 
 ## Verification Steps
 
@@ -49,3 +43,8 @@ Connector note (ideate): `ExplanationService` consumes the `ValidationError[]`, 
    - Expected: the inclusive-invoice assertion passes (zero `subtotal` errors); this is the case that was previously failing.
 2. **test** Run the full validator suite to confirm no regression on the GST-exclusive path and that the "reconciles against neither" case still errors — `./vendor/bin/pest --filter=ArithmeticValidator`
    - Expected: all `ArithmeticValidatorTest` cases pass, including the pre-existing exclusive-case assertions and the new inclusive + neither cases.
+
+## Outputs
+
+- app/Services/Validation/ArithmeticValidator.php — Check (a) rewritten to OR-logic: passes when line items reconcile to subtotal (GST-exclusive) OR total (GST-inclusive) within TOLERANCE_AUD; emits the `subtotal` error only when neither holds. Checks (b)/(c) untouched.
+- tests/Unit/Validation/ArithmeticValidatorTest.php — Four new Pest tests covering AC1 (GST-inclusive pass), AC2 (GST-exclusive no regression), AC3 (reconciles-against-neither error), AC4 (tolerance boundary). Suite: 12 passed.
