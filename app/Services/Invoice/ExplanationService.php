@@ -17,6 +17,10 @@ use App\Services\Claude\ClaudeClient;
  * blocks, no tool schema). It runs AFTER validation so the prompt can
  * reference concrete deterministic findings (e.g. ABN checksum) that the
  * extraction model cannot compute.
+ *
+ * Findings are partitioned by severity before building the prompt:
+ * - Blocking findings (error/warning) → "what the supplier must fix" path.
+ * - Info findings → contextual notes only; never framed as supplier errors.
  */
 final class ExplanationService
 {
@@ -25,9 +29,8 @@ final class ExplanationService
     /**
      * Generate a plain-English explanation card for the operator.
      *
-     * @param  ExtractedInvoice     $invoice  The structured extraction result.
-     * @param  list<ValidationError> $errors  Deterministic validation findings.
-     *
+     * @param  ExtractedInvoice  $invoice  The structured extraction result.
+     * @param  list<ValidationError>  $errors  Deterministic validation findings.
      * @return string The operator-facing explanation (what to tell the supplier).
      */
     public function explain(ExtractedInvoice $invoice, array $errors): string
@@ -59,20 +62,40 @@ final class ExplanationService
     {
         $invoiceSummary = $this->buildInvoiceSummary($invoice);
 
-        if ($errors === []) {
+        /** @var list<ValidationError> $blockingFindings */
+        $blockingFindings = array_values(array_filter(
+            $errors,
+            static fn (ValidationError $e): bool => $e->severity === 'error' || $e->severity === 'warning',
+        ));
+
+        /** @var list<ValidationError> $infoFindings */
+        $infoFindings = array_values(array_filter(
+            $errors,
+            static fn (ValidationError $e): bool => $e->severity === 'info',
+        ));
+
+        if ($blockingFindings === []) {
+            // All-clear path: no blocking findings. Include any info findings as context.
+            $infoContext = $this->buildInfoContext($infoFindings);
+
             return <<<PROMPT
             The following invoice has been reviewed and all validation checks have passed
             — no errors or warnings were found.
 
             Invoice summary:
             {$invoiceSummary}
-
+            {$infoContext}
             Write a brief, positive message (2–3 sentences) telling the operator that
-            no issues were found and the invoice looks complete and correct.
+            no issues were found and the invoice looks complete and correct. If contextual
+            notes are present above, mention them neutrally (e.g. note that a payment or
+            credit has been applied and state the balance due). Do not tell the operator
+            to ask the supplier to correct anything.
             PROMPT;
         }
 
-        $errorList = $this->buildErrorList($errors);
+        // Blocking path: one or more error/warning findings. Info findings become context.
+        $errorList = $this->buildErrorList($blockingFindings);
+        $infoContext = $this->buildInfoContext($infoFindings);
 
         return <<<PROMPT
         The following invoice has been reviewed and the deterministic validation checks
@@ -85,10 +108,11 @@ final class ExplanationService
 
         Validation errors found:
         {$errorList}
-
+        {$infoContext}
         Write a clear, actionable explanation (3–6 sentences) for the operator. Reference
         each failed check by field name. Be specific about what is wrong and what the
-        supplier must do to correct it.
+        supplier must do to correct it. If contextual notes are present above, mention them
+        neutrally — they are not errors the supplier must fix.
         PROMPT;
     }
 
@@ -133,5 +157,33 @@ final class ExplanationService
         }
 
         return implode("\n", $lines);
+    }
+
+    /**
+     * Build a contextual notes section for info-severity findings.
+     * Returns an empty string when there are no info findings.
+     *
+     * @param  list<ValidationError>  $infoFindings
+     */
+    private function buildInfoContext(array $infoFindings): string
+    {
+        if ($infoFindings === []) {
+            return '';
+        }
+
+        $lines = [];
+
+        foreach ($infoFindings as $finding) {
+            $lines[] = "- {$finding->message}";
+        }
+
+        $notesList = implode("\n", $lines);
+
+        return <<<CONTEXT
+
+        Contextual notes (informational only — no action required from the supplier):
+        {$notesList}
+
+        CONTEXT;
     }
 }
