@@ -1,10 +1,13 @@
 <script setup lang="ts">
 /**
  * ValidationPanel — groups deterministic validation findings by severity
- * (errors first, then warnings) and lists the checks that passed.
+ * (errors first, then warnings, then info notes) and lists the checks that passed.
  *
  * Mirrors example screen 2: a critical-error card, amber warning cards, and a
  * "passing checks" list with green Matched chips. All token-backed.
+ *
+ * Info-severity findings are rendered in a "Notes" section and excluded from
+ * the issue count — an invoice with only an info note reads as "0 issues".
  */
 import { computed } from 'vue';
 import {
@@ -27,6 +30,15 @@ const blockingErrors = computed<ResultValidationError[]>(() =>
 
 const warnings = computed<ResultValidationError[]>(() =>
     props.errors.filter((e) => e.severity === 'warning'),
+);
+
+const infoNotes = computed<ResultValidationError[]>(() =>
+    props.errors.filter((e) => e.severity === 'info'),
+);
+
+/** Issue count excludes info-severity findings — they are notes, not issues. */
+const issueCount = computed<number>(
+    () => blockingErrors.value.length + warnings.value.length,
 );
 
 const successTone = STATUS_TONE_CLASSES.success;
@@ -59,8 +71,8 @@ function labelClasses(severity: Severity): string {
                           : [successTone.text, successTone.bg]
                 "
             >
-                {{ errors.length }}
-                {{ errors.length === 1 ? 'issue' : 'issues' }}
+                {{ issueCount }}
+                {{ issueCount === 1 ? 'issue' : 'issues' }}
             </span>
         </header>
 
@@ -107,6 +119,30 @@ function labelClasses(severity: Severity): string {
                     {{ warning.field }}
                 </p>
                 <p class="mt-1 text-sm text-on-surface">{{ warning.message }}</p>
+            </article>
+        </div>
+
+        <!-- Notes (info-severity findings) -->
+        <div v-if="infoNotes.length > 0" class="mt-4 space-y-3">
+            <p
+                class="font-mono text-[12px] font-bold uppercase tracking-[0.05em]"
+                :class="labelClasses('info')"
+            >
+                Notes
+            </p>
+            <article
+                v-for="(note, i) in infoNotes"
+                :key="`info-${i}`"
+                class="rounded-lg border-l-4 p-4"
+                :class="cardClasses('info')"
+            >
+                <p
+                    class="font-mono text-[12px] font-bold uppercase tracking-[0.05em]"
+                    :class="labelClasses('info')"
+                >
+                    {{ note.field }}
+                </p>
+                <p class="mt-1 text-sm text-on-surface">{{ note.message }}</p>
             </article>
         </div>
 
