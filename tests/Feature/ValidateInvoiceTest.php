@@ -156,3 +156,78 @@ it('redirects GET /validate to / with a 302 response', function () {
         ->assertStatus(302)
         ->assertRedirect('/');
 });
+
+/**
+ * The brief's payment-allocated invoice (UR-004):
+ *   Supplier: Vista Lawn Care, ABN: 77651564117
+ *   Subtotal: 357.96, GST: 35.79, Total: 18.00 (net balance after payment applied)
+ *   Line items: service charges + late fees + credits + payment received = 18.00 net
+ */
+function paymentAllocatedExtraction(): array
+{
+    return [
+        'supplier' => 'Vista Lawn Care',
+        'abn' => '77651564117', // valid ATO checksum
+        'invoice_date' => '2026-04-18',
+        'due_date' => '2026-04-18',
+        'line_items' => [
+            ['description' => 'Ride-on Mowing - Professional ride-on mowing. Includes whipper snipping all boundaries', 'qty' => 1, 'rate' => 375.0, 'amount' => 375.0],
+            ['description' => 'Fuel Surcharge - Temporary Fuel Fee', 'qty' => 1, 'rate' => 18.75, 'amount' => 18.75],
+            ['description' => 'Late Payment Fee (25/04/2026)', 'qty' => null, 'rate' => null, 'amount' => 6.0],
+            ['description' => 'Late Payment Fee (02/05/2026)', 'qty' => null, 'rate' => null, 'amount' => 6.0],
+            ['description' => 'Late Payment Fee (09/05/2026)', 'qty' => null, 'rate' => null, 'amount' => 6.0],
+            ['description' => 'Late Fee (16/05/2026)', 'qty' => null, 'rate' => null, 'amount' => 6.0],
+            ['description' => 'Late Payment Credit (18/05/2026)', 'qty' => null, 'rate' => null, 'amount' => -6.0],
+            ['description' => 'Payment received (15/05/2026)', 'qty' => null, 'rate' => null, 'amount' => -393.75],
+        ],
+        'subtotal' => 357.96,
+        'gst' => 35.79,
+        'total' => 18.00,
+        'service_category' => 'landscaping',
+        'confidence' => [
+            'supplier' => 0.99, 'abn' => 0.98, 'invoice_date' => 0.97, 'due_date' => 0.97,
+            'subtotal' => 0.98, 'gst' => 0.99, 'total' => 0.99,
+        ],
+    ];
+}
+
+it('REQ-024 AC1–AC4: payment-allocated invoice passes end-to-end with no critical total error and correct explanation framing', function () {
+    bindFakeClaude(new PipelineFakeClaudeClient(paymentAllocatedExtraction()));
+
+    $this->post('/validate', ['file' => fakeUpload()])
+        ->assertStatus(200)
+        ->assertInertia(fn ($page) => $page
+            ->component('Result')
+            ->where('result.has_error', false)
+            // AC1: no error-severity finding on the total field.
+            ->where('result.errors', function ($errors) {
+                $totalErrors = array_filter(
+                    $errors->all(),
+                    fn ($e) => $e['field'] === 'total' && $e['severity'] === 'error',
+                );
+                expect($totalErrors)->toBeEmpty('REQ-024 AC1: payment-allocated invoice must not produce an error-severity total finding');
+
+                return true;
+            })
+            // AC2: exactly one info-severity finding referencing payments/credits applied.
+            ->where('result.errors', function ($errors) {
+                $totalInfos = array_values(array_filter(
+                    $errors->all(),
+                    fn ($e) => $e['field'] === 'total' && $e['severity'] === 'info',
+                ));
+                expect($totalInfos)->toHaveCount(1, 'REQ-024 AC2: exactly one info finding expected on the total field');
+                expect($totalInfos[0]['message'])->toContain('payments');
+
+                return true;
+            })
+            // AC3: the generated explanation does not contain supplier-fix framing.
+            ->where('result.explanation', function ($explanation) {
+                expect($explanation)->not->toContain('corrected invoice', 'REQ-024 AC3: explanation must not ask supplier for a corrected invoice');
+                expect($explanation)->not->toContain('subtotal plus GST', 'REQ-024 AC3: explanation must not tell operator to ask supplier to fix subtotal+GST mismatch');
+
+                return true;
+            })
+            // AC4: confidence is not failed on account of the info note (info is not a hard error).
+            ->where('result.confidence.passed', true, 'REQ-024 AC4: confidence must pass because the info finding is not a hard error')
+        );
+});
