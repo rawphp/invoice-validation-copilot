@@ -1,19 +1,13 @@
 # REQ-017: Result page UI
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T10:01:36Z
-**Heartbeat:** 2026-06-24T10:01:36Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** frontend
 **Entry point:**
 **Terminal state:**
 **Parent:** REQ-003
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:4ee5053
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** L
@@ -30,11 +24,11 @@ Brief output set: structured JSON, confidence score, validation errors, supplier
 
 ## Acceptance Criteria
 
-- [ ] The page renders all sections: overall confidence + pass/fail badge, per-field confidence chips, line-items table, validation panel (errors + passing checks), explanation card, JSON viewer, audit timeline.
-- [ ] The structured-JSON block uses the dark `data-mono` Precision Ledger styling and has a copy action.
-- [ ] Validation errors display with severity styling (error vs warning) per the design system.
-- [ ] A friendly error result (Claude failure / non-invoice) renders an error message instead of the full sections.
-- [ ] All components type-check under `lang="ts"` and `npm run build` compiles cleanly.
+- [x] The page renders all sections: overall confidence + pass/fail badge, per-field confidence chips, line-items table, validation panel (errors + passing checks), explanation card, JSON viewer, audit timeline.
+- [x] The structured-JSON block uses the dark `data-mono` Precision Ledger styling and has a copy action.
+- [x] Validation errors display with severity styling (error vs warning) per the design system.
+- [x] A friendly error result (Claude failure / non-invoice) renders an error message instead of the full sections.
+- [x] All components type-check under `lang="ts"` and `npm run build` compiles cleanly.
 
 ## Verification Steps
 
@@ -52,3 +46,12 @@ Brief output set: structured JSON, confidence score, validation errors, supplier
 ## Assets
 
 - .do-work/user-requests/UR-001/assets/validation_review_error_handling/screen.png — validation/result visual reference
+
+## Outputs
+
+- resources/js/Pages/Result.vue — single-page InvoiceResult renderer (success + friendly-error states), wrapped in AppLayout
+- resources/js/Components/ConfidenceChip.vue — per-field confidence % chip (toned)
+- resources/js/Components/ValidationPanel.vue — groups errors/warnings by severity + passing-checks list
+- resources/js/Components/JsonViewer.vue — collapsible, copyable, dark (Slate 900) data-mono JSON block
+- resources/js/Components/AuditTimeline.vue — audit_entries as a toned vertical timeline
+- resources/js/types/result.ts — InvoiceResultPayload TS types matching InvoiceResult::toArray()
