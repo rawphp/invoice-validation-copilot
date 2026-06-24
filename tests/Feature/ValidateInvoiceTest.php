@@ -191,6 +191,34 @@ function paymentAllocatedExtraction(): array
     ];
 }
 
+it('REQ-025: the /validate redirect route does not include POST in its HTTP methods (cache-independent guard)', function () {
+    // Find every /validate route whose method list includes GET (the redirect/catch-all,
+    // not the POST controller route). Assert that none of those routes also include POST.
+    $validateRoutes = [];
+
+    foreach (app('router')->getRoutes() as $route) {
+        if ($route->uri() === 'validate') {
+            $validateRoutes[] = $route;
+        }
+    }
+
+    expect($validateRoutes)->not->toBeEmpty('At least one /validate route must be registered');
+
+    foreach ($validateRoutes as $route) {
+        if (in_array('GET', $route->methods(), true)) {
+            expect(in_array('POST', $route->methods(), true))->toBeFalse(
+                'The /validate redirect/catch-all route must not match POST — it would intercept POST /validate before the controller route under route caching'
+            );
+        }
+    }
+});
+
+it('REQ-025: PUT /validate redirects to / with 302 (non-POST verbs keep redirecting)', function () {
+    $this->put('/validate')
+        ->assertStatus(302)
+        ->assertRedirect('/');
+});
+
 it('REQ-024 AC1–AC4: payment-allocated invoice passes end-to-end with no critical total error and correct explanation framing', function () {
     bindFakeClaude(new PipelineFakeClaudeClient(paymentAllocatedExtraction()));
 
