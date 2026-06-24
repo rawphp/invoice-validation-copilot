@@ -1,7 +1,13 @@
 # REQ-017: Result page UI
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
+**Claimed at:** 2026-06-24T10:01:36Z
+**Heartbeat:** 2026-06-24T10:01:36Z
+<!-- claimed-end -->
+
 **UR:** UR-001
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** frontend
 **Entry point:**
