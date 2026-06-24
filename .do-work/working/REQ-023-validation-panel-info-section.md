@@ -1,7 +1,13 @@
 # REQ-023: Render info-severity findings in the validation panel
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.21069
+**Claimed at:** 2026-06-24T22:37:09Z
+**Heartbeat:** 2026-06-24T22:37:09Z
+<!-- claimed-end -->
+
 **UR:** UR-004
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** frontend
 **Entry point:**
