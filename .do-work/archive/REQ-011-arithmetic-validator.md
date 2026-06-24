@@ -1,19 +1,13 @@
 # REQ-011: ArithmeticValidator (GST + totals, with tolerance)
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T09:30:00Z
-**Heartbeat:** 2026-06-24T09:30:00Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
 **Terminal state:**
 **Parent:** REQ-003
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:0b26d35
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** M
@@ -30,10 +24,10 @@ Clarification: "Standard-rated, small tolerance — assume all lines are 10% GST
 
 ## Acceptance Criteria
 
-- [ ] An internally consistent standard-rated invoice (lines→subtotal, GST=10%, subtotal+GST=total) yields no errors.
-- [ ] An invoice where GST ≠ 10% of subtotal (beyond tolerance) yields one `error` on the `gst` figure.
-- [ ] An invoice where subtotal + GST ≠ total (beyond tolerance) yields one `error` on the `total` figure.
-- [ ] A discrepancy within the cent tolerance (e.g. ±$0.02 rounding) yields no error.
+- [x] An internally consistent standard-rated invoice (lines→subtotal, GST=10%, subtotal+GST=total) yields no errors.
+- [x] An invoice where GST ≠ 10% of subtotal (beyond tolerance) yields one `error` on the `gst` figure.
+- [x] An invoice where subtotal + GST ≠ total (beyond tolerance) yields one `error` on the `total` figure.
+- [x] A discrepancy within the cent tolerance (e.g. ±$0.02 rounding) yields no error.
 
 ## Verification Steps
 
@@ -50,3 +44,8 @@ Clarification: "Standard-rated, small tolerance — assume all lines are 10% GST
 ## Assets
 
 - (none)
+
+## Outputs
+
+- app/Services/Validation/ArithmeticValidator.php — lines→subtotal, GST=10%·subtotal, subtotal+GST=total within $0.02 tolerance (Validator contract)
+- tests/Unit/Validation/ArithmeticValidatorTest.php — 8 Pest tests (consistent, GST/total errors, tolerance)
