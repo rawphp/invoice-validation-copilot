@@ -1,0 +1,20 @@
+run_id: RUN-001
+req: REQ-001
+ur: UR-001
+agent_id: "Toms-MacBook-Pro.local.dowork-ur001"
+model: "opus"
+branch: "req/REQ-001"
+started_at: "2026-06-24T08:45:42Z"
+ended_at: "2026-06-24T08:54:35Z"
+result: "done"
+review_outcome: "passed"
+proof_status: "unproven"
+cost_estimate: "tier:opus"
+cost_estimate_num: 0.50
+pr_url: ""
+commands:
+  []
+tests:
+  []
+changed_files:
+  []
