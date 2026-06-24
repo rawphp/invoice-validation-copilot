@@ -61,3 +61,22 @@ The following decisions were agreed during a brainstorming pass and form the sco
 **Error handling:** file type/size guard · Claude API failure → friendly error, no crash · non-invoice image → low confidence + "couldn't extract a valid invoice" flag.
 
 **Visual design:** Adopt the **Precision Ledger** design system in `assets/precision_ledger/DESIGN.md` (Deep Slate + Indigo palette, Inter + JetBrains Mono, soft 0.25rem shapes, status pills, dark JSON block even in light mode, card/outline elevation). The four example screens in `assets/` are **inspiration and vision reference only** — borrow component ideas from screens 1 (extraction) and 2 (validation review): per-field confidence chips, passing-checks list, critical-error detail card, supplier-friendly explanation card, status pills. **Do not build** screens 3 (finance dashboard) or 4 (cross-record audit log) — they require persistence/multi-user and are out of scope. Stick to the agreed single-invoice, in-memory scope.
+
+## Clarifications
+
+**Q:** Your brief specifies ABN and GST (Australian), but the example screens show US invoices ('CA 94105', 'Net 30', no ABN). What will the invoices you actually demo with be?
+**A:** Australian only. Build ABN checksum + 10% GST + DD/MM dates as hard validators. The US screens were visual inspiration only.
+
+**Q:** Real Australian invoices can mix GST-free lines and have cent-rounding. How strict should the GST/arithmetic check be?
+**A:** Standard-rated, small tolerance. Assume all lines are 10% GST; check GST = 10% of subtotal and subtotal+GST=total within a few-cents tolerance. (Accepts that a GST-free invoice would be flagged — demo invoices are standard-rated.)
+
+**Q:** The 'supplier-friendly explanation' sounds like something sent to the supplier, but the in-memory single-page demo has no send/email path. What is it in this build?
+**A:** An operator-facing "what to tell the supplier" card on the result page — plain-English summary the operator can read or copy. No send mechanism.
+
+**Q:** The mobile-QR feature originally implied LAN binding. How is the app actually served?
+**A:** Deployed to a production server with a domain over HTTPS. The QR encodes the **public domain URL** (from `APP_URL`), so there is **no LAN binding, no LAN-IP detection, no `--host`/firewall handling**. The phone opens the public HTTPS URL like any visitor; secure-context camera works. This supersedes the ideate "LAN binding" concern.
+
+**Q:** Is provisioning/deploying the production server + domain part of this build?
+**A:** Just make it deploy-ready. Build a clean app that works behind a domain/HTTPS (QR uses `APP_URL`, correct asset URLs, build step, env vars) and include a short deploy checklist/config — but **no actual provisioning** (Tom deploys it himself, e.g. Forge).
+
+**Note:** Phone-camera photos can exceed Claude's image size/dimension limits — server-side downscale/recompress before the vision call still applies (carried from ideate, independent of the LAN change).
