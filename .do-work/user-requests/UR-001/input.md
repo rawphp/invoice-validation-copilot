@@ -24,7 +24,7 @@ reqs:
   - { id: REQ-016, layer: backend, integration_confidence: partial }
   - { id: REQ-017, layer: frontend, integration_confidence: partial }
   - { id: REQ-018, layer: none, integration_confidence: n/a }
-acknowledged_partials: []
+acknowledged_partials: [REQ-002, REQ-004, REQ-005, REQ-006, REQ-007, REQ-008, REQ-009, REQ-010, REQ-011, REQ-012, REQ-013, REQ-014, REQ-015, REQ-016, REQ-017]
 ---
 
 <!-- capture-summary-start -->
