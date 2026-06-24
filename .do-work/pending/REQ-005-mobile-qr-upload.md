@@ -1,13 +1,7 @@
 # REQ-005: Mobile QR on upload page
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T10:13:19Z
-**Heartbeat:** 2026-06-24T10:13:19Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** pending-validation
 **Created:** 2026-06-24
 **Layer:** frontend
 **Entry point:**
@@ -17,7 +11,7 @@
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** S
-**Files:** resources/js/Components/MobileQr.vue, app/Http/Middleware/HandleInertiaRequests.php
+**Files:** resources/js/Components/MobileQr.vue, resources/js/Pages/Upload.vue, package.json, package-lock.json
 **Depends on:** REQ-002, REQ-004
 
 ## Task
@@ -30,10 +24,10 @@ Brief: "show a QR code that a mobile device can scan to open the same page, to u
 
 ## Acceptance Criteria
 
-- [ ] The upload page displays a scannable QR code encoding the public upload URL from `APP_URL`.
-- [ ] `APP_URL` is exposed to the frontend via Inertia shared props (not hardcoded in the component).
-- [ ] The QR renders client-side and the component type-checks under `lang="ts"`.
-- [ ] `npm run build` compiles cleanly.
+- [x] The upload page displays a scannable QR code encoding the public upload URL from `APP_URL`.
+- [x] `APP_URL` is exposed to the frontend via Inertia shared props (not hardcoded in the component).
+- [x] The QR renders client-side and the component type-checks under `lang="ts"`.
+- [x] `npm run build` compiles cleanly.
 
 ## Verification Steps
 
@@ -43,6 +37,7 @@ Brief: "show a QR code that a mobile device can scan to open the same page, to u
 ## Post-merge validation
 
 - [ ] On the deployed HTTPS domain, scan the QR with a phone — Observable outcome: the phone opens the upload page and the camera file input works (secure context).
+- [ ] (deferred ui) Navigate to / on the served app with APP_URL set and confirm the QR code is visible on the upload page (environment: needs a browser/served app — could not run in worktree)
 
 ## Integration
 
@@ -55,3 +50,9 @@ Brief: "show a QR code that a mobile device can scan to open the same page, to u
 ## Assets
 
 - (none)
+
+## Outputs
+
+- resources/js/Components/MobileQr.vue — client-side QR encoding the public upload URL from the `appUrl` Inertia shared prop; Precision Ledger styled
+- resources/js/Pages/Upload.vue — mounts the MobileQr panel below the format hint
+- package.json / package-lock.json — added `qrcode` runtime dep + `@types/qrcode`
