@@ -1,7 +1,13 @@
 # REQ-016: Pipeline orchestrator + InvoiceController + routes
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
+**Claimed at:** 2026-06-24T09:43:58Z
+**Heartbeat:** 2026-06-24T09:43:58Z
+<!-- claimed-end -->
+
 **UR:** UR-001
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
