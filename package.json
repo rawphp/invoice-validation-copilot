@@ -3,8 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vue-tsc --noEmit && vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "build": "vue-tsc --noEmit && vite build"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
