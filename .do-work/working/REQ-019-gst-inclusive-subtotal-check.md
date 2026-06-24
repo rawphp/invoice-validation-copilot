@@ -1,7 +1,13 @@
 # REQ-019: Accept GST-inclusive line items in subtotal check
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.76142
+**Claimed at:** 2026-06-24T10:47:20Z
+**Heartbeat:** 2026-06-24T10:47:20Z
+<!-- claimed-end -->
+
 **UR:** UR-002
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** none
 **Entry point:**
