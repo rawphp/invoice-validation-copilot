@@ -1,7 +1,13 @@
 # REQ-006: ClaudeClient contract + Anthropic implementation
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
+**Claimed at:** 2026-06-24T08:59:07Z
+**Heartbeat:** 2026-06-24T08:59:07Z
+<!-- claimed-end -->
+
 **UR:** UR-001
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
