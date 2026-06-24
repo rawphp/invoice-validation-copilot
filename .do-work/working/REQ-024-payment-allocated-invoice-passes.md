@@ -1,7 +1,13 @@
 # REQ-024: Payment-allocated invoice validates cleanly end-to-end
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.44067
+**Claimed at:** 2026-06-24T22:44:17Z
+**Heartbeat:** 2026-06-24T22:44:17Z
+<!-- claimed-end -->
+
 **UR:** UR-004
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** none
 **Entry point:** AP operator uploads a payment-allocated invoice on the upload page → POST /validate → InvoicePipeline (extraction → validation → confidence → explanation) → result page.
