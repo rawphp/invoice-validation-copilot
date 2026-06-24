@@ -1,19 +1,13 @@
 # REQ-010: AbnValidator (ATO checksum)
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T09:30:00Z
-**Heartbeat:** 2026-06-24T09:30:00Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
 **Terminal state:**
 **Parent:** REQ-003
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:aa43f37
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** S
@@ -30,10 +24,10 @@ Ideate Connector: the ABN checksum is a fixed, well-specified deterministic algo
 
 ## Acceptance Criteria
 
-- [ ] A known-valid ABN (e.g. 51 824 753 556) passes with no error.
-- [ ] A checksum-failing 11-digit number yields one `error`-severity `ValidationError` on field `abn`.
-- [ ] A non-11-digit value yields a format error.
-- [ ] Whitespace/spacing in the ABN string is tolerated (normalized before checking).
+- [x] A known-valid ABN (e.g. 51 824 753 556) passes with no error.
+- [x] A checksum-failing 11-digit number yields one `error`-severity `ValidationError` on field `abn`.
+- [x] A non-11-digit value yields a format error.
+- [x] Whitespace/spacing in the ABN string is tolerated (normalized before checking).
 
 ## Verification Steps
 
@@ -50,3 +44,8 @@ Ideate Connector: the ABN checksum is a fixed, well-specified deterministic algo
 ## Assets
 
 - (none)
+
+## Outputs
+
+- app/Services/Validation/AbnValidator.php — ATO modulus-89 ABN checksum validator (Validator contract)
+- tests/Unit/Validation/AbnValidatorTest.php — 11 Pest tests (valid vector, checksum/format failures, whitespace)
