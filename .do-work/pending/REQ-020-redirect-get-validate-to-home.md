@@ -1,13 +1,7 @@
 # REQ-020: Redirect GET /validate to home
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.9589
-**Claimed at:** 2026-06-24T10:58:21Z
-**Heartbeat:** 2026-06-24T10:58:21Z
-<!-- claimed-end -->
-
 **UR:** UR-003
-**Status:** in-progress
+**Status:** pending-validation
 **Created:** 2026-06-24
 **Layer:** none
 **Entry point:**
@@ -39,9 +33,9 @@ The reload-loses-result trade-off is accepted: the `InvoiceResult` is request-sc
 
 ## Acceptance Criteria
 
-- [ ] A `GET /validate` request returns a 302 redirect to `/` (was: 405 Method Not Allowed)
-- [ ] `POST /validate` still renders the `Result` page unchanged (regression guard)
-- [ ] `GET /` still renders the `Upload` page unchanged (regression guard)
+- [x] A `GET /validate` request returns a 302 redirect to `/` (was: 405 Method Not Allowed)
+- [x] `POST /validate` still renders the `Result` page unchanged (regression guard)
+- [x] `GET /` still renders the `Upload` page unchanged (regression guard)
 
 ## Verification Steps
 
@@ -56,6 +50,11 @@ The reload-loses-result trade-off is accepted: the `InvoiceResult` is request-sc
 > The direct `GET /validate` redirect is fully proven by the feature test above. This item confirms the real end-to-end browser reload, which requires running the live upload pipeline (Claude API) and so cannot run in a worker's isolated worktree.
 
 - [ ] Upload an invoice on `/`, land on the Result page, then reload the browser — Observable outcome: the browser navigates to `/` (the upload page) instead of showing a 405 / error.
+
+## Outputs
+
+- routes/web.php — Added `Route::redirect('/validate', '/')` between the `GET /` and `POST /validate` routes (302 redirect)
+- tests/Feature/ValidateInvoiceTest.php — Added test asserting `GET /validate` returns a 302 redirect to `/`
 
 ## Assets
 
