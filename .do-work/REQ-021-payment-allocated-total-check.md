@@ -40,6 +40,7 @@ Challenger (ideate): the suppression must be gated on the line items reconciling
 - [ ] A genuine Total typo — line items reconcile to neither `subtotal + GST` nor the Total (e.g. lineSum 50.00 / subtotal 357.96 / GST 35.79 / total 18.00) — still emits exactly one `error`-severity `total` error and **no** `info` finding.
 - [ ] A standard charge-only invoice where `subtotal + GST == total` (e.g. subtotal 80.00 / GST 8.00 / total 88.00, line items summing to 88.00) still passes check (c) with **no** `total` error and **no** `info` finding (no regression; no spurious info note when there is no payment).
 - [ ] An invoice with **no** line items where `subtotal + GST != total` still emits the `error`-severity `total` error (no corroboration available, so the check falls back to the subtotal+GST assertion).
+- [ ] A negative net total (credits/payments exceed charges, e.g. line items summing to −20.00 with total −20.00) where line items reconcile to the Total produces **no** `error`-severity `total` error — the `abs()` tolerance comparison handles sign — and emits one `info` finding.
 
 ## Verification Steps
 
