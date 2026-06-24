@@ -1,7 +1,13 @@
 # REQ-025: POST /validate must reach controller regardless of route cache
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.92426
+**Claimed at:** 2026-06-24T23:01:17Z
+**Heartbeat:** 2026-06-24T23:01:17Z
+<!-- claimed-end -->
+
 **UR:** UR-005
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-25
 **Layer:** none
 **Entry point:**
