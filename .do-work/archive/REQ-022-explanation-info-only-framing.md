@@ -1,19 +1,13 @@
 # REQ-022: Frame info-only findings as context, not supplier errors, in the explanation
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.77194
-**Claimed at:** 2026-06-24T11:54:35Z
-**Heartbeat:** 2026-06-24T11:54:35Z
-<!-- claimed-end -->
-
 **UR:** UR-004
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
 **Terminal state:**
 **Parent:** REQ-024
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed (10/10 ExplanationService tests; full suite 122 passed on merged main) commit:74f4f89
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** M
@@ -37,10 +31,10 @@ From UR-004 clarifications: the info-note decision supersedes the earlier "expla
 
 ## Acceptance Criteria
 
-- [ ] When `explain()` receives only `info`-severity findings (no `error`/`warning`), the prompt sent to the Claude client uses the positive/all-clear framing (no "supplier must fix" / "corrected invoice" language) and includes the info finding text as context.
-- [ ] When `explain()` receives a mix of `error` and `info` findings, the prompt lists the `error` finding(s) under the "must fix" framing and the `info` finding(s) as non-blocking context, not as fix items.
-- [ ] When `explain()` receives an empty findings array, behaviour is unchanged (existing all-clear prompt).
-- [ ] When `explain()` receives only `error`/`warning` findings (no info), behaviour is unchanged (existing "must fix" prompt) — no regression.
+- [x] When `explain()` receives only `info`-severity findings (no `error`/`warning`), the prompt sent to the Claude client uses the positive/all-clear framing (no "supplier must fix" / "corrected invoice" language) and includes the info finding text as context.
+- [x] When `explain()` receives a mix of `error` and `info` findings, the prompt lists the `error` finding(s) under the "must fix" framing and the `info` finding(s) as non-blocking context, not as fix items.
+- [x] When `explain()` receives an empty findings array, behaviour is unchanged (existing all-clear prompt).
+- [x] When `explain()` receives only `error`/`warning` findings (no info), behaviour is unchanged (existing "must fix" prompt) — no regression.
 
 ## Verification Steps
 
@@ -58,3 +52,8 @@ From UR-004 clarifications: the info-note decision supersedes the earlier "expla
 **Data dependencies:** Reads the `App\DTO\ValidationError[]` produced by `ValidationService` (specifically each finding's `severity`) and the `ExtractedInvoice` summary. Writes nothing; returns a string.
 
 **Service dependencies:** Extends the existing `App\Services\Invoice\ExplanationService`; uses the injected `App\Services\Claude\ClaudeClient` (faked in tests via `tests/Fakes/`). No new services.
+
+## Outputs
+
+- app/Services/Invoice/ExplanationService.php — `buildPrompt()` now partitions findings into blocking (error/warning) and info; info-only invoices take the all-clear prompt path (no supplier-fix framing) with info notes added as neutral context via a new `buildInfoContext()` method; mixed error+info lists errors under "must fix" and info as non-blocking context.
+- tests/Unit/Invoice/ExplanationServiceTest.php — 3 new Pest cases (AC1 info-only all-clear framing, AC1-negative no must-fix language, AC2 mixed error+info separation). ExplanationService suite: 10 passed; full suite 122 passed on merged main.
