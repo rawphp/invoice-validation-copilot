@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Services\Claude\ClaudeClient;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Exceptions;
 use Tests\Fakes\PipelineFakeClaudeClient;
 
 /** A valid AU invoice extraction (good ABN, correct arithmetic, past dates). */
@@ -149,6 +150,23 @@ it('renders a friendly error (not a 500) when the Claude vision call throws', fu
             ->where('result.error_message', fn ($v) => is_string($v) && $v !== '')
             ->where('result.invoice', null)
         );
+});
+
+it('reports the underlying exception when a pipeline step throws (observability)', function () {
+    Exceptions::fake();
+
+    bindFakeClaude(new PipelineFakeClaudeClient(goodExtraction(), throwOnVision: true));
+
+    $this->post('/validate', ['file' => fakeUpload()])
+        ->assertStatus(200)
+        ->assertInertia(fn ($page) => $page
+            ->component('Result')
+            ->where('result.has_error', true)
+        );
+
+    // The friendly error state must NOT swallow the cause silently — the real
+    // throwable is reported so a Claude/API outage is diagnosable in production.
+    Exceptions::assertReported(RuntimeException::class);
 });
 
 it('redirects GET /validate to / with a 302 response', function () {

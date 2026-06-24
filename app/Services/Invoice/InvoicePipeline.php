@@ -9,6 +9,7 @@ use App\DTO\InvoiceResult;
 use App\Services\Claude\ClaudeClient;
 use App\Services\Claude\ClaudeResponse;
 use App\Services\Validation\ValidationService;
+use Closure;
 use Illuminate\Http\UploadedFile;
 use Throwable;
 
@@ -47,60 +48,26 @@ final class InvoicePipeline
         $extraction = new ExtractionService($recorder);
         $explanationService = new ExplanationService($recorder);
 
-        // Step 1 — File intake (deterministic).
-        $start = microtime(true);
         try {
-            $intake = $this->fileIntake->process($file);
-        } catch (Throwable $e) {
-            $audit->recordDeterministic('intake', 'failed', $this->elapsed($start), 0);
+            // Fixed ordering — confidence and explanation MUST run after validation.
+            [$intake, $duration] = $this->step($audit, 'intake', fn () => $this->fileIntake->process($file));
+            $audit->recordDeterministic('intake', 'ok', $duration, 0);
 
-            return InvoiceResult::error($this->friendlyMessage($e), $audit->entries());
+            [$invoice, $duration] = $this->step($audit, 'extract', fn () => $extraction->extract($intake));
+            $this->recordLlmStep($audit, 'extract', $duration, $recorder->lastResponse());
+
+            [$errors, $duration] = $this->step($audit, 'validate', fn () => $this->validation->run($invoice));
+            $audit->recordDeterministic('validate', 'ok', $duration, count($errors));
+
+            [$confidence, $duration] = $this->step($audit, 'score', fn () => $this->scorer->score($invoice, $errors));
+            $audit->recordDeterministic('score', 'ok', $duration, 0);
+
+            [$explanation, $duration] = $this->step($audit, 'explain', fn () => $explanationService->explain($invoice, $errors));
+            $this->recordLlmStep($audit, 'explain', $duration, $recorder->lastResponse());
+        } catch (PipelineStepFailed) {
+            // The step recorded its own 'failed' audit entry and reported the cause.
+            return InvoiceResult::error($this->friendlyMessage(), $audit->entries());
         }
-        $audit->recordDeterministic('intake', 'ok', $this->elapsed($start), 0);
-
-        // Step 2 — Extraction (LLM vision + tool call).
-        $start = microtime(true);
-        try {
-            $invoice = $extraction->extract($intake);
-        } catch (Throwable $e) {
-            $audit->recordDeterministic('extract', 'failed', $this->elapsed($start), 0);
-
-            return InvoiceResult::error($this->friendlyMessage($e), $audit->entries());
-        }
-        $this->recordLlmStep($audit, 'extract', $start, $recorder->lastResponse());
-
-        // Step 3 — Validation (deterministic; all validators registered).
-        $start = microtime(true);
-        try {
-            $errors = $this->validation->run($invoice);
-        } catch (Throwable $e) {
-            $audit->recordDeterministic('validate', 'failed', $this->elapsed($start), 0);
-
-            return InvoiceResult::error($this->friendlyMessage($e), $audit->entries());
-        }
-        $audit->recordDeterministic('validate', 'ok', $this->elapsed($start), count($errors));
-
-        // Step 4 — Confidence scoring (deterministic) — AFTER validation.
-        $start = microtime(true);
-        try {
-            $confidence = $this->scorer->score($invoice, $errors);
-        } catch (Throwable $e) {
-            $audit->recordDeterministic('score', 'failed', $this->elapsed($start), 0);
-
-            return InvoiceResult::error($this->friendlyMessage($e), $audit->entries());
-        }
-        $audit->recordDeterministic('score', 'ok', $this->elapsed($start), 0);
-
-        // Step 5 — Explanation (LLM text) — AFTER validation.
-        $start = microtime(true);
-        try {
-            $explanation = $explanationService->explain($invoice, $errors);
-        } catch (Throwable $e) {
-            $audit->recordDeterministic('explain', 'failed', $this->elapsed($start), 0);
-
-            return InvoiceResult::error($this->friendlyMessage($e), $audit->entries());
-        }
-        $this->recordLlmStep($audit, 'explain', $start, $recorder->lastResponse());
 
         return InvoiceResult::success(
             invoice: $invoice,
@@ -111,12 +78,39 @@ final class InvoicePipeline
         );
     }
 
-    private function recordLlmStep(AuditLog $audit, string $step, float $start, ?ClaudeResponse $response): void
+    /**
+     * Run one timed pipeline step. On failure it records a 'failed' audit entry,
+     * reports the cause for observability, and short-circuits the run via
+     * {@see PipelineStepFailed}. Success-side audit recording stays with the
+     * caller, since it differs per step (deterministic vs LLM, error counts).
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return array{0: TResult, 1: float} The step result and its duration in ms.
+     */
+    private function step(AuditLog $audit, string $name, Closure $work): array
+    {
+        $start = microtime(true);
+
+        try {
+            $result = $work();
+        } catch (Throwable $e) {
+            report($e);
+            $audit->recordDeterministic($name, 'failed', $this->elapsed($start), 0);
+
+            throw new PipelineStepFailed($name, $e);
+        }
+
+        return [$result, $this->elapsed($start)];
+    }
+
+    private function recordLlmStep(AuditLog $audit, string $step, float $duration, ?ClaudeResponse $response): void
     {
         $audit->recordLlm(
             step: $step,
             status: 'ok',
-            duration: $this->elapsed($start),
+            duration: $duration,
             modelId: $response?->model ?? 'unknown',
             inputTokens: $response?->inputTokens ?? 0,
             outputTokens: $response?->outputTokens ?? 0,
@@ -128,7 +122,7 @@ final class InvoicePipeline
         return round((microtime(true) - $start) * 1000, 2);
     }
 
-    private function friendlyMessage(Throwable $e): string
+    private function friendlyMessage(): string
     {
         return 'We could not finish validating this invoice. The document service '
             .'is temporarily unavailable — please try again in a moment.';
