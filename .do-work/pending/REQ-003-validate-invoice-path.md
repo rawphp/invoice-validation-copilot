@@ -1,13 +1,7 @@
 # REQ-003: [PATH] Validate an invoice end-to-end
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T10:20:49Z
-**Heartbeat:** 2026-06-24T10:20:49Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** pending-validation
 **Created:** 2026-06-24
 **Layer:** none
 **Entry point:** User visits `/`, drags/drops or selects an invoice PDF/PNG/JPG, and submits the form (POST `/validate`). A mobile user reaches the same upload page by scanning the on-page QR code (public `APP_URL`).
@@ -30,9 +24,9 @@ The brief's five-step pipeline (upload → extract → classify → check fields
 
 ## Acceptance Criteria
 
-- [ ] Uploading a valid Australian invoice on `/` and submitting produces a result page showing every output listed in Terminal state.
-- [ ] A malformed/non-invoice image yields a graceful low-confidence "couldn't extract a valid invoice" result, not a crash.
-- [ ] A Claude API failure renders a friendly error page, not a stack trace.
+- [x] Uploading a valid Australian invoice on `/` and submitting produces a result page showing every output listed in Terminal state.
+- [x] A malformed/non-invoice image yields a graceful low-confidence "couldn't extract a valid invoice" result, not a crash.
+- [x] A Claude API failure renders a friendly error page, not a stack trace.
 
 ## Verification Steps
 
@@ -46,3 +40,7 @@ The brief's five-step pipeline (upload → extract → classify → check fields
 ## Assets
 
 - .do-work/user-requests/UR-001/assets/ — example screens (vision reference) + Precision Ledger DESIGN.md
+
+## Outputs
+
+- (closure REQ — no new code) Path closed by the integrated app; proven by tests/Feature/ValidateInvoiceTest.php (end-to-end, 11/11). Live-API + phone checks remain in Post-merge validation.
