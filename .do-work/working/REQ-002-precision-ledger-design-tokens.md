@@ -1,7 +1,13 @@
 # REQ-002: Precision Ledger design tokens + base layout shell
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
+**Claimed at:** 2026-06-24T08:59:07Z
+**Heartbeat:** 2026-06-24T08:59:07Z
+<!-- claimed-end -->
+
 **UR:** UR-001
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** frontend
 **Entry point:**
