@@ -1,19 +1,13 @@
 # REQ-012: DateValidator (AU locale, sanity)
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T09:30:01Z
-**Heartbeat:** 2026-06-24T09:30:01Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
 **Terminal state:**
 **Parent:** REQ-003
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:c992ed3
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** M
@@ -30,10 +24,10 @@ Clarification: Australian only → DD/MM dates. Ideate Challenger: DD/MM vs MM/D
 
 ## Acceptance Criteria
 
-- [ ] "24/10/2023" parses as 24 October 2023 (DD/MM), not 10 February.
-- [ ] An invoice date after the injected "now" yields one `error` on `invoice_date`.
-- [ ] A due date before the invoice date yields one `error` on `due_date`.
-- [ ] An unparseable date string yields a format error rather than throwing.
+- [x] "24/10/2023" parses as 24 October 2023 (DD/MM), not 10 February.
+- [x] An invoice date after the injected "now" yields one `error` on `invoice_date`.
+- [x] A due date before the invoice date yields one `error` on `due_date`.
+- [x] An unparseable date string yields a format error rather than throwing.
 
 ## Verification Steps
 
@@ -50,3 +44,8 @@ Clarification: Australian only → DD/MM dates. Ideate Challenger: DD/MM vs MM/D
 ## Assets
 
 - (none)
+
+## Outputs
+
+- app/Services/Validation/DateValidator.php — AU DD/MM/YYYY parsing, injectable clock, future + due<invoice checks (Validator contract)
+- tests/Unit/Validation/DateValidatorTest.php — 14 Pest tests (DD/MM disambiguation, fixed-clock future, no-throw)
