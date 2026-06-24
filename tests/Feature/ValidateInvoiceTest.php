@@ -223,3 +223,9 @@ it('renders a friendly error (not a 500) when the Claude vision call throws', fu
             ->where('result.invoice', null)
         );
 });
+
+it('redirects GET /validate to / with a 302 response', function () {
+    $this->get('/validate')
+        ->assertStatus(302)
+        ->assertRedirect('/');
+});
