@@ -1,8 +1,35 @@
 ---
 ur: UR-006
 received: 2026-06-25
-status: intake
+status: captured
+open_gaps:
+  - "Fix is isolated to ArithmeticValidator check (a): it sums adjustment rows (payment -150, late fee +6) into the charge reconciliation, producing the false 'subtotal' error"
+  - "Charge vs adjustment classification: sign alone is insufficient (payment is negative, late fee is positive) — needs keyword+sign or extraction tagging"
+  - "User deferred the fix-approach decision to capture: Option A (PHP-side keyword+sign classifier, backend-only, respects REQ-021 'no new extraction field') vs Option B (extraction tags LineItem kind). Capture chooses and records rationale in the REQ + decisions.md"
+  - "When charge lines reconcile but full line sum does not, emit an info-severity note (reuse REQ-022 plumbing) explaining the balance-due gap rather than silently passing"
+  - "Must keep REQ-019 AC3 and REQ-021 AC3 green — genuine line-item typos must still emit an error-severity finding"
+classification: bug-fix
+layers_in_scope: []
+layer_decisions: {}
+reqs:
+  - { id: REQ-026, layer: none, integration_confidence: n/a }
+acknowledged_partials: []
 ---
+
+<!-- capture-summary-start -->
+## Capture summary (2026-06-25)
+
+| Item | Value |
+|---|---|
+| Classification | bug-fix |
+| Layers in scope | (none — bug-fix) |
+| Layer decisions | (none — all covered) |
+| REQs generated | 1 |
+
+| REQ | Layer | Integration confidence |
+|---|---|---|
+| REQ-026 | none | n/a |
+<!-- capture-summary-end -->
 
 # UR-006: User Request
 
