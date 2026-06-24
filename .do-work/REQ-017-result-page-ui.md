@@ -12,7 +12,7 @@
 **Priority:** 2
 **Size:** L
 **Files:** resources/js/Pages/Result.vue, resources/js/Components/ConfidenceChip.vue, resources/js/Components/ValidationPanel.vue, resources/js/Components/JsonViewer.vue, resources/js/Components/AuditTimeline.vue
-**Depends on:** REQ-002 REQ-016
+**Depends on:** REQ-002, REQ-016
 
 ## Task
 

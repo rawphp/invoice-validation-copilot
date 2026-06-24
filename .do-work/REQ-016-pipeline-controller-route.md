@@ -12,7 +12,7 @@
 **Priority:** 2
 **Size:** L
 **Files:** app/Services/Invoice/InvoicePipeline.php, app/DTO/InvoiceResult.php, app/Http/Controllers/InvoiceController.php, routes/web.php, tests/Feature/ValidateInvoiceTest.php
-**Depends on:** REQ-007 REQ-008 REQ-009 REQ-010 REQ-011 REQ-012 REQ-013 REQ-014 REQ-015
+**Depends on:** REQ-007, REQ-008, REQ-009, REQ-010, REQ-011, REQ-012, REQ-013, REQ-014, REQ-015
 
 ## Task
 

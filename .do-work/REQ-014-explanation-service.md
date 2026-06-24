@@ -12,7 +12,7 @@
 **Priority:** 2
 **Size:** M
 **Files:** app/Services/Invoice/ExplanationService.php, tests/Unit/Invoice/ExplanationServiceTest.php
-**Depends on:** REQ-006 REQ-009
+**Depends on:** REQ-006, REQ-009
 
 ## Task
 

@@ -12,7 +12,7 @@
 **Priority:** 3
 **Size:** L
 **Files:** app/Services/Invoice/ExtractionService.php, app/DTO/ExtractedInvoice.php, app/DTO/LineItem.php, app/DTO/FieldConfidence.php, app/Enums/ServiceCategory.php, tests/Unit/Invoice/ExtractionServiceTest.php
-**Depends on:** REQ-006 REQ-007
+**Depends on:** REQ-006, REQ-007
 
 ## Task
 

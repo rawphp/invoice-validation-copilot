@@ -12,7 +12,7 @@
 **Priority:** 1
 **Size:** S
 **Files:** .do-work/user-requests/UR-001/input.md
-**Depends on:** REQ-004 REQ-005 REQ-006 REQ-007 REQ-008 REQ-009 REQ-010 REQ-011 REQ-012 REQ-013 REQ-014 REQ-015 REQ-016 REQ-017
+**Depends on:** REQ-004, REQ-005, REQ-006, REQ-007, REQ-008, REQ-009, REQ-010, REQ-011, REQ-012, REQ-013, REQ-014, REQ-015, REQ-016, REQ-017
 
 ## Task
 

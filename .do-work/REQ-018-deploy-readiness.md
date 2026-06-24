@@ -12,7 +12,7 @@
 **Priority:** 1
 **Size:** S
 **Files:** .env.example, config/services.php, README.md
-**Depends on:** REQ-016 REQ-017
+**Depends on:** REQ-016, REQ-017
 
 ## Task
 

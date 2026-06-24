@@ -12,7 +12,7 @@
 **Priority:** 2
 **Size:** M
 **Files:** resources/js/Pages/Upload.vue, resources/js/types/invoice.ts
-**Depends on:** REQ-002 REQ-016
+**Depends on:** REQ-002, REQ-016
 
 ## Task
 

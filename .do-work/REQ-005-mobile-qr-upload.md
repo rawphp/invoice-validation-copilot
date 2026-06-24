@@ -12,7 +12,7 @@
 **Priority:** 2
 **Size:** S
 **Files:** resources/js/Components/MobileQr.vue, app/Http/Middleware/HandleInertiaRequests.php
-**Depends on:** REQ-002 REQ-004
+**Depends on:** REQ-002, REQ-004
 
 ## Task
 

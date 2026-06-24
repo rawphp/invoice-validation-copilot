@@ -12,7 +12,7 @@
 **Priority:** 2
 **Size:** S
 **Files:** app/Services/Invoice/ConfidenceScorer.php, tests/Unit/Invoice/ConfidenceScorerTest.php
-**Depends on:** REQ-008 REQ-009
+**Depends on:** REQ-008, REQ-009
 
 ## Task
 
