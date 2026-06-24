@@ -1,58 +1,132 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Invoice Validation Copilot
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Upload an Australian supplier invoice (PDF or image) and get back, in one pass:
+structured data, a confidence score, deterministic validation errors, a
+plain-English "what to tell the supplier" explanation, and a full audit trail —
+all on a single result page. No database, no history; each upload runs the
+pipeline in memory and renders the outcome.
 
-## About Laravel
+This is a focused prototype built to showcase a credible end-to-end document
+pipeline, not a production system.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## What it does
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. **Upload** a PDF / PNG / JPG (drag-and-drop on desktop, or scan a QR code to
+   upload straight from a phone camera).
+2. **Extract & classify** — one Claude vision call returns the supplier, ABN,
+   invoice and due dates, line items, subtotal, GST and total, plus per-field
+   confidence and a service category.
+3. **Validate** — four deterministic (non-LLM) checks run over the extracted
+   data.
+4. **Explain** — a second Claude (text) call writes a warm, supplier-friendly
+   summary that reflects the deterministic findings.
+5. **Render** — the result page shows the confidence badge, extracted fields
+   with per-field confidence chips, the line-items table, grouped
+   errors/warnings, the explanation card, copyable structured JSON, and the
+   audit timeline.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Stack
 
-## Learning Laravel
+- **Laravel 13** (PHP 8.3)
+- **Vue 3** with `<script setup lang="ts">` + **Inertia 2**
+- **Tailwind CSS 4** — the *Precision Ledger* design tokens (Deep Slate +
+  Indigo, Inter + JetBrains Mono) are wired into the Tailwind theme as the
+  single source of truth
+- **Vite 8** for the frontend build
+- **Pest 4** for tests
+- **Anthropic Claude** (`claude-opus-4-8`) for vision extraction and the
+  explanation step
+- **No database** — sessions/cache/queue use non-DB drivers; there are no
+  migrations
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Architecture
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+The pipeline is a set of isolated, individually testable units wired together
+by an orchestrator. Order matters: extract → validate → score → explain, with
+every step recorded to the audit log.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+FileIntake → ExtractionService → ValidationService → ConfidenceScorer → ExplanationService
+                  (Claude vision)   (4 deterministic       (avg field conf,    (Claude text)
+                                      validators)           penalised per fail)
+                  └──────────────────────── AuditLog records every step ────────────────────┘
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+| Component | Responsibility |
+|---|---|
+| `Services/Invoice/FileIntake` | File type/size guard; downscale/recompress images before the vision call (phone photos exceed Claude's image limits) |
+| `Services/Invoice/ExtractionService` | Single Claude vision call with a forced JSON schema (tool use); returns the `ExtractedInvoice` DTO with per-field confidence + `ServiceCategory` |
+| `Services/Validation/ValidationService` | Runs the four validators, aggregates `ValidationError{field, severity, message}` |
+| ├ `RequiredFieldsValidator` | Flags missing mandatory fields |
+| ├ `AbnValidator` | 11 digits + official ATO modulus-89 weighted checksum |
+| ├ `ArithmeticValidator` | Line items → subtotal, GST ≈ 10% of subtotal, subtotal + GST = total (within a few-cents tolerance) |
+| └ `DateValidator` | Parses AU `DD/MM` dates; not future-dated; due date ≥ invoice date |
+| `Services/Invoice/ConfidenceScorer` | Overall confidence = average of field confidences, penalised per hard validation failure |
+| `Services/Invoice/ExplanationService` | Second Claude (text) call; operator-facing supplier explanation reflecting the deterministic checks |
+| `Services/Invoice/AuditLog` | Timestamped entries per step (status, duration, model + token counts for LLM steps, error count) |
+| `Services/Claude/ClaudeClient` | The single seam both LLM calls sit on; `AnthropicClaudeClient` is the live impl, faked in tests so the suite never hits the network |
 
-## Contributing
+Typed DTOs (`ExtractedInvoice`, `LineItem`, `ValidationError`, `ConfidenceResult`,
+`FieldConfidence`, `AuditEntry`) carry data across layers and mirror the
+TypeScript props shared by the Vue components.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Design decisions worth knowing
 
-## Code of Conduct
+- **Australian-only.** ABN checksum, 10% GST, and `DD/MM` dates are hard
+  validators. Demo invoices are assumed standard-rated — a fully GST-free
+  invoice would be flagged.
+- **Confidence is model-estimated.** Per-field numbers come from Claude;
+  treat them as estimates, not calibrated probabilities. The overall score
+  combines them with the deterministic failures.
+- **Mobile upload is standalone.** The QR encodes the public `APP_URL`; the
+  phone opens the same upload page over HTTPS and sees its own result. No
+  session pairing, no shared state.
+- **Graceful failure.** A Claude/API error renders a friendly error result,
+  never a stack trace; a non-invoice image yields low confidence and a
+  "couldn't extract a valid invoice" flag.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Setup
 
-## Security Vulnerabilities
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+npm install
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Set your Anthropic key in `.env`:
 
-## License
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Run the app (server + queue + logs + Vite, all at once):
+
+```bash
+composer dev
+```
+
+Then open http://localhost:8000.
+
+## Testing
+
+```bash
+composer test          # or: ./vendor/bin/pest
+./vendor/bin/pint      # code style
+```
+
+The four deterministic validators have unit tests (known valid/invalid ABNs,
+arithmetic, dates). The pipeline has a feature test with the `ClaudeClient`
+faked, so tests run offline.
+
+## Deployment
+
+The app is deploy-ready for a domain over HTTPS (e.g. Laravel Forge); no
+provisioning is included here.
+
+- Set `APP_URL` to the public HTTPS URL — the mobile-upload QR encodes this, so
+  it must be correct for the phone to reach the app.
+- Set `APP_ENV=production`, `APP_DEBUG=false`, and a real `APP_KEY`.
+- Provide `ANTHROPIC_API_KEY`.
+- Build assets: `npm run build`.
+- No database to migrate (`DB_CONNECTION=null`); `QUEUE_CONNECTION=sync`.
