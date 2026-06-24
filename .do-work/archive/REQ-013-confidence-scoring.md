@@ -1,19 +1,13 @@
 # REQ-013: Confidence scoring
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T09:37:32Z
-**Heartbeat:** 2026-06-24T09:37:32Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
 **Terminal state:**
 **Parent:** REQ-003
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:66cc4b9
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** S
@@ -30,10 +24,10 @@ Brief output "confidence score". Ideate: model self-reported confidence is uncal
 
 ## Acceptance Criteria
 
-- [ ] Overall confidence with no validation errors equals the average of per-field confidences (within rounding).
-- [ ] Each `error`-severity `ValidationError` lowers the overall score (assert a penalized result is strictly less than the unpenalized average).
-- [ ] The score is clamped to the 0–1 range.
-- [ ] A pass/fail verdict is derived (e.g. fail when any hard error exists or score below a threshold).
+- [x] Overall confidence with no validation errors equals the average of per-field confidences (within rounding).
+- [x] Each `error`-severity `ValidationError` lowers the overall score (assert a penalized result is strictly less than the unpenalized average).
+- [x] The score is clamped to the 0–1 range.
+- [x] A pass/fail verdict is derived (e.g. fail when any hard error exists or score below a threshold).
 
 ## Verification Steps
 
@@ -50,3 +44,9 @@ Brief output "confidence score". Ideate: model self-reported confidence is uncal
 ## Assets
 
 - (none)
+
+## Outputs
+
+- app/Services/Invoice/ConfidenceScorer.php — avg per-field confidence penalised 0.1/hard-error, clamped 0..1, pass/fail verdict (threshold 0.6)
+- app/DTO/ConfidenceResult.php — readonly {overall float, passed bool}
+- tests/Unit/Invoice/ConfidenceScorerTest.php — 13 Pest tests (average, penalty, clamp, verdict, threshold)
