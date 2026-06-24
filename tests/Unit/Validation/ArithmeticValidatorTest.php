@@ -8,6 +8,7 @@ use App\DTO\LineItem;
 use App\DTO\ValidationError;
 use App\Enums\ServiceCategory;
 use App\Services\Validation\ArithmeticValidator;
+use App\Services\Validation\Validator;
 
 // ---------------------------------------------------------------------------
 // Fixture helpers
@@ -129,14 +130,14 @@ function invoiceWithTinyRounding(): ExtractedInvoice
 // ---------------------------------------------------------------------------
 
 it('ArithmeticValidator returns no errors for an internally consistent standard-rated invoice', function () {
-    $validator = new ArithmeticValidator();
+    $validator = new ArithmeticValidator;
     $errors = $validator->validate(consistentInvoice());
 
     expect($errors)->toBeEmpty();
 });
 
 it('ArithmeticValidator returns one error on gst field when GST is off by $5 beyond tolerance', function () {
-    $validator = new ArithmeticValidator();
+    $validator = new ArithmeticValidator;
     $errors = $validator->validate(invoiceWithWrongGst());
 
     // Only the GST field should be flagged
@@ -147,7 +148,7 @@ it('ArithmeticValidator returns one error on gst field when GST is off by $5 bey
 });
 
 it('ArithmeticValidator flags gst error with error severity', function () {
-    $validator = new ArithmeticValidator();
+    $validator = new ArithmeticValidator;
     $errors = $validator->validate(invoiceWithWrongGst());
 
     $gstError = array_values(array_filter($errors, fn (ValidationError $e) => $e->field === 'gst'));
@@ -157,7 +158,7 @@ it('ArithmeticValidator flags gst error with error severity', function () {
 });
 
 it('ArithmeticValidator returns one error on total field when subtotal+GST does not equal total', function () {
-    $validator = new ArithmeticValidator();
+    $validator = new ArithmeticValidator;
     $errors = $validator->validate(invoiceWithWrongTotal());
 
     $fields = array_map(fn (ValidationError $e) => $e->field, $errors);
@@ -167,7 +168,7 @@ it('ArithmeticValidator returns one error on total field when subtotal+GST does 
 });
 
 it('ArithmeticValidator flags total error with error severity', function () {
-    $validator = new ArithmeticValidator();
+    $validator = new ArithmeticValidator;
     $errors = $validator->validate(invoiceWithWrongTotal());
 
     $totalError = array_values(array_filter($errors, fn (ValidationError $e) => $e->field === 'total'));
@@ -177,14 +178,14 @@ it('ArithmeticValidator flags total error with error severity', function () {
 });
 
 it('ArithmeticValidator returns no errors when discrepancy is within cent tolerance', function () {
-    $validator = new ArithmeticValidator();
+    $validator = new ArithmeticValidator;
     $errors = $validator->validate(invoiceWithTinyRounding());
 
     expect($errors)->toBeEmpty();
 });
 
 it('ArithmeticValidator returns ValidationError instances', function () {
-    $validator = new ArithmeticValidator();
+    $validator = new ArithmeticValidator;
     $errors = $validator->validate(invoiceWithWrongGst());
 
     foreach ($errors as $error) {
@@ -193,7 +194,117 @@ it('ArithmeticValidator returns ValidationError instances', function () {
 });
 
 it('ArithmeticValidator implements Validator contract', function () {
-    $validator = new ArithmeticValidator();
+    $validator = new ArithmeticValidator;
 
-    expect($validator)->toBeInstanceOf(\App\Services\Validation\Validator::class);
+    expect($validator)->toBeInstanceOf(Validator::class);
+});
+
+// ---------------------------------------------------------------------------
+// REQ-019: GST-inclusive line items (check-a OR-logic)
+// ---------------------------------------------------------------------------
+
+/**
+ * AC1: GST-inclusive invoice from the UR-002 brief.
+ *   Line items: Mowing $55 + Edging $25 = $80.00 (GST-inclusive totals)
+ *   Subtotal: $72.73 (ex-GST: 80 ÷ 1.1)
+ *   GST:      $7.27  (80 ÷ 11)
+ *   Total:    $80.00
+ * Line items sum to total, not subtotal — validator must pass check (a).
+ */
+function gstInclusiveInvoice(): ExtractedInvoice
+{
+    return new ExtractedInvoice(
+        supplier: 'Vista Lawn Care',
+        abn: '77 651 564 117',
+        invoiceDate: '2026-02-09',
+        dueDate: '2026-02-09',
+        lineItems: [
+            new LineItem(description: 'Mowing', qty: 1.0, rate: 55.0, amount: 55.0),
+            new LineItem(description: 'Edging', qty: 1.0, rate: 25.0, amount: 25.0),
+        ],
+        subtotal: 72.73,
+        gst: 7.27,
+        total: 80.00,
+        serviceCategory: ServiceCategory::CleaningMaintenance,
+        confidence: arithmeticConfidence(),
+    );
+}
+
+/**
+ * AC3: Line items reconcile against neither subtotal nor total — must error.
+ *   lineSum 90.00 / subtotal 72.73 / total 80.00
+ */
+function gstInclusiveInvoiceWithWrongLineItems(): ExtractedInvoice
+{
+    return new ExtractedInvoice(
+        supplier: 'Vista Lawn Care',
+        abn: '77 651 564 117',
+        invoiceDate: '2026-02-09',
+        dueDate: '2026-02-09',
+        lineItems: [
+            new LineItem(description: 'Mowing', qty: 1.0, rate: 55.0, amount: 55.0),
+            new LineItem(description: 'Edging', qty: 1.0, rate: 25.0, amount: 25.0),
+            new LineItem(description: 'Extra work', qty: 1.0, rate: 10.0, amount: 10.0),
+        ],
+        subtotal: 72.73,
+        gst: 7.27,
+        total: 80.00,
+        serviceCategory: ServiceCategory::CleaningMaintenance,
+        confidence: arithmeticConfidence(),
+    );
+}
+
+it('AC1: ArithmeticValidator returns zero subtotal errors for a GST-inclusive invoice (brief scenario)', function () {
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate(gstInclusiveInvoice());
+
+    $subtotalErrors = array_values(array_filter($errors, fn (ValidationError $e) => $e->field === 'subtotal'));
+
+    expect($subtotalErrors)->toBeEmpty();
+});
+
+it('AC2: ArithmeticValidator returns no subtotal error for a GST-exclusive invoice (no regression)', function () {
+    $validator = new ArithmeticValidator;
+    // consistentInvoice() is GST-exclusive: lineSum=300 == subtotal=300
+    $errors = $validator->validate(consistentInvoice());
+
+    $subtotalErrors = array_values(array_filter($errors, fn (ValidationError $e) => $e->field === 'subtotal'));
+
+    expect($subtotalErrors)->toBeEmpty();
+});
+
+it('AC3: ArithmeticValidator emits exactly one subtotal error when line items reconcile against neither subtotal nor total', function () {
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate(gstInclusiveInvoiceWithWrongLineItems());
+
+    $subtotalErrors = array_values(array_filter($errors, fn (ValidationError $e) => $e->field === 'subtotal'));
+
+    expect($subtotalErrors)->toHaveCount(1)
+        ->and($subtotalErrors[0]->severity)->toBe('error');
+});
+
+it('AC4: ArithmeticValidator accepts GST-inclusive line items within TOLERANCE_AUD of total', function () {
+    // lineSum 80.01 vs total 80.00 — difference 0.01 is within TOLERANCE_AUD (0.02)
+    $invoice = new ExtractedInvoice(
+        supplier: 'Vista Lawn Care',
+        abn: '77 651 564 117',
+        invoiceDate: '2026-02-09',
+        dueDate: '2026-02-09',
+        lineItems: [
+            new LineItem(description: 'Mowing', qty: 1.0, rate: 55.01, amount: 55.01),
+            new LineItem(description: 'Edging', qty: 1.0, rate: 25.0, amount: 25.0),
+        ],
+        subtotal: 72.73,  // lineSum 80.01 ≠ subtotal 72.73 (diff 7.28 > tolerance)
+        gst: 7.27,
+        total: 80.00,     // lineSum 80.01 vs total 80.00 (diff 0.01 <= TOLERANCE_AUD 0.02)
+        serviceCategory: ServiceCategory::CleaningMaintenance,
+        confidence: arithmeticConfidence(),
+    );
+
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate($invoice);
+
+    $subtotalErrors = array_values(array_filter($errors, fn (ValidationError $e) => $e->field === 'subtotal'));
+
+    expect($subtotalErrors)->toBeEmpty();
 });
