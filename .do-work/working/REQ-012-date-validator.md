@@ -1,7 +1,13 @@
 # REQ-012: DateValidator (AU locale, sanity)
 
+<!-- claimed-start -->
+**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
+**Claimed at:** 2026-06-24T09:30:01Z
+**Heartbeat:** 2026-06-24T09:30:01Z
+<!-- claimed-end -->
+
 **UR:** UR-001
-**Status:** backlog
+**Status:** in-progress
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
