@@ -308,3 +308,187 @@ it('AC4: ArithmeticValidator accepts GST-inclusive line items within TOLERANCE_A
 
     expect($subtotalErrors)->toBeEmpty();
 });
+
+// ---------------------------------------------------------------------------
+// REQ-021: Payment-allocated invoice Total check (check-c OR-logic)
+// ---------------------------------------------------------------------------
+
+/**
+ * The brief's payment-allocated invoice (UR-004):
+ *   Line items: service charges + late fees + credits + payment = 18.00 net
+ *   Subtotal: 357.96 (charges ex-GST)
+ *   GST:      35.79  (10% of subtotal)
+ *   Total:    18.00  (net balance due after payments/credits)
+ *
+ * Line items sum to Total (18.00), not subtotal+GST (393.75).
+ * Check (c) must NOT emit an error; must emit one info finding instead.
+ */
+function paymentAllocatedInvoice(): ExtractedInvoice
+{
+    return new ExtractedInvoice(
+        supplier: 'Vista Lawn Care',
+        abn: '77 651 564 117',
+        invoiceDate: '2026-04-18',
+        dueDate: '2026-04-18',
+        lineItems: [
+            new LineItem(description: 'Ride-on Mowing', qty: 1.0, rate: 375.00, amount: 375.00),
+            new LineItem(description: 'Fuel Surcharge', qty: 1.0, rate: 18.75, amount: 18.75),
+            new LineItem(description: 'Late Payment Fee (25/04/2026)', qty: null, rate: null, amount: 6.00),
+            new LineItem(description: 'Late Payment Fee (02/05/2026)', qty: null, rate: null, amount: 6.00),
+            new LineItem(description: 'Late Payment Fee (09/05/2026)', qty: null, rate: null, amount: 6.00),
+            new LineItem(description: 'Late Fee (16/05/2026)', qty: null, rate: null, amount: 6.00),
+            new LineItem(description: 'Late Payment Credit (18/05/2026)', qty: null, rate: null, amount: -6.00),
+            new LineItem(description: 'Payment received (15/05/2026)', qty: null, rate: null, amount: -393.75),
+        ],
+        subtotal: 357.96,
+        gst: 35.79,
+        total: 18.00,
+        serviceCategory: ServiceCategory::CleaningMaintenance,
+        confidence: arithmeticConfidence(),
+    );
+}
+
+/**
+ * Genuine total typo: line items reconcile to neither subtotal+GST nor the Total.
+ *   lineSum: 50.00 / subtotal: 357.96 / GST: 35.79 / total: 18.00
+ * Both subtotal+GST (393.75) and lineSum (50.00) differ from total (18.00).
+ */
+function paymentAllocatedInvoiceWithGenuineTypo(): ExtractedInvoice
+{
+    return new ExtractedInvoice(
+        supplier: 'Vista Lawn Care',
+        abn: '77 651 564 117',
+        invoiceDate: '2026-04-18',
+        dueDate: '2026-04-18',
+        lineItems: [
+            new LineItem(description: 'Some service', qty: 1.0, rate: 50.00, amount: 50.00),
+        ],
+        subtotal: 357.96,
+        gst: 35.79,
+        total: 18.00,  // total 18.00 ≠ lineSum 50.00 AND ≠ subtotal+GST 393.75 — genuine typo
+        serviceCategory: ServiceCategory::CleaningMaintenance,
+        confidence: arithmeticConfidence(),
+    );
+}
+
+/**
+ * Negative net total: credits/payments exceed charges.
+ *   lineItems sum to -20.00 / total: -20.00 / subtotal+GST: 110.00
+ * Line items corroborate total (abs matches within tolerance), so no error expected,
+ * and one info finding should be emitted.
+ */
+function negativeNetTotalInvoice(): ExtractedInvoice
+{
+    return new ExtractedInvoice(
+        supplier: 'Vista Lawn Care',
+        abn: '77 651 564 117',
+        invoiceDate: '2026-04-18',
+        dueDate: '2026-04-18',
+        lineItems: [
+            new LineItem(description: 'Service', qty: 1.0, rate: 100.00, amount: 100.00),
+            new LineItem(description: 'Overpayment refund', qty: null, rate: null, amount: -120.00),
+        ],
+        subtotal: 100.00,
+        gst: 10.00,
+        total: -20.00,
+        serviceCategory: ServiceCategory::CleaningMaintenance,
+        confidence: arithmeticConfidence(),
+    );
+}
+
+it('REQ-021 AC1: payment-allocated invoice (UR-004 brief) produces zero error-severity total findings', function () {
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate(paymentAllocatedInvoice());
+
+    $totalErrors = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'total' && $e->severity === 'error',
+    ));
+
+    expect($totalErrors)->toBeEmpty();
+});
+
+it('REQ-021 AC2: payment-allocated invoice produces exactly one info-severity total finding', function () {
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate(paymentAllocatedInvoice());
+
+    $totalInfos = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'total' && $e->severity === 'info',
+    ));
+
+    expect($totalInfos)->toHaveCount(1);
+    expect($totalInfos[0]->message)->toContain('payments');
+});
+
+it('REQ-021 AC3: genuine total typo still emits one error-severity total error and no info finding', function () {
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate(paymentAllocatedInvoiceWithGenuineTypo());
+
+    $totalErrors = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'total' && $e->severity === 'error',
+    ));
+    $totalInfos = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'total' && $e->severity === 'info',
+    ));
+
+    expect($totalErrors)->toHaveCount(1);
+    expect($totalInfos)->toBeEmpty();
+});
+
+it('REQ-021 AC4: charge-only invoice with subtotal+GST==total still passes check (c) with no total error and no info', function () {
+    $validator = new ArithmeticValidator;
+    // consistentInvoice(): subtotal=300, gst=30, total=330; lineSum=300=subtotal (charge-only)
+    $errors = $validator->validate(consistentInvoice());
+
+    $totalFindings = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'total',
+    ));
+
+    expect($totalFindings)->toBeEmpty();
+});
+
+it('REQ-021 AC5: invoice with no line items and subtotal+GST!=total still emits error-severity total error', function () {
+    $invoice = new ExtractedInvoice(
+        supplier: 'Acme Pty Ltd',
+        abn: '12 345 678 901',
+        invoiceDate: '2024-07-15',
+        dueDate: '2024-08-15',
+        lineItems: [],
+        subtotal: 300.0,
+        gst: 30.0,
+        total: 999.0,  // wrong total, no line items to corroborate
+        serviceCategory: ServiceCategory::ProfessionalServices,
+        confidence: arithmeticConfidence(),
+    );
+
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate($invoice);
+
+    $totalErrors = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'total' && $e->severity === 'error',
+    ));
+
+    expect($totalErrors)->toHaveCount(1);
+});
+
+it('REQ-021 AC6: negative net total with line items corroborating produces no error and one info finding', function () {
+    $validator = new ArithmeticValidator;
+    $errors = $validator->validate(negativeNetTotalInvoice());
+
+    $totalErrors = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'total' && $e->severity === 'error',
+    ));
+    $totalInfos = array_values(array_filter(
+        $errors,
+        fn (ValidationError $e) => $e->field === 'total' && $e->severity === 'info',
+    ));
+
+    expect($totalErrors)->toBeEmpty();
+    expect($totalInfos)->toHaveCount(1);
+});

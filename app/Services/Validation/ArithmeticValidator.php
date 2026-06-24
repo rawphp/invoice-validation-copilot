@@ -95,17 +95,53 @@ final class ArithmeticValidator implements Validator
         }
 
         // (c) Subtotal + GST = total.
+        //
+        // On a payment-allocated invoice, the Total is the net balance due after
+        // payments/credits — not the charge total. In that case the line items
+        // (which include the payment/credit rows) corroborate the Total even though
+        // subtotal + GST does not equal it.
+        //
+        // Three-way decision:
+        //  1. subtotal + GST ≈ total             → pass (standard charge invoice)
+        //  2. subtotal + GST ≠ total AND
+        //     line items corroborate total       → suppress error, emit info note
+        //  3. subtotal + GST ≠ total AND
+        //     line items do NOT corroborate total → genuine typo, emit error
+        //
+        // When no line items are present, only path 1 or 3 can apply.
         $expectedTotal = $invoice->subtotal + $invoice->gst;
-        if (abs($invoice->total - $expectedTotal) > self::TOLERANCE_AUD) {
-            $errors[] = new ValidationError(
-                field: 'total',
-                severity: 'error',
-                message: sprintf(
-                    'Total is %s but subtotal + GST = %s.',
-                    number_format($invoice->total, 2),
-                    number_format($expectedTotal, 2),
-                ),
-            );
+        $checkCFails = abs($invoice->total - $expectedTotal) > self::TOLERANCE_AUD;
+
+        if ($checkCFails) {
+            // Determine whether the already-computed $reconcilesToTotal flag can
+            // serve as independent corroboration (only meaningful when line items exist).
+            $lineItemsCorroborateTotal = isset($reconcilesToTotal) && $reconcilesToTotal;
+
+            if ($lineItemsCorroborateTotal) {
+                // Suppress the error — line items confirm the Total is the net balance due.
+                // Emit a single informational note so operators understand why the numbers differ.
+                $errors[] = new ValidationError(
+                    field: 'total',
+                    severity: 'info',
+                    message: sprintf(
+                        'Total of %s reflects payments/credits already applied; charges before payment were %s (subtotal + GST).',
+                        number_format($invoice->total, 2),
+                        number_format($expectedTotal, 2),
+                    ),
+                );
+            } else {
+                // No corroboration from line items (either none present, or they also
+                // disagree with the Total) — this is a genuine arithmetic discrepancy.
+                $errors[] = new ValidationError(
+                    field: 'total',
+                    severity: 'error',
+                    message: sprintf(
+                        'Total is %s but subtotal + GST = %s.',
+                        number_format($invoice->total, 2),
+                        number_format($expectedTotal, 2),
+                    ),
+                );
+            }
         }
 
         return $errors;
