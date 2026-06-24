@@ -1,19 +1,13 @@
 # REQ-014: ExplanationService (operator-facing supplier explanation)
 
-<!-- claimed-start -->
-**Claimed by:** Toms-MacBook-Pro.local.dowork-ur001
-**Claimed at:** 2026-06-24T09:37:32Z
-**Heartbeat:** 2026-06-24T09:37:32Z
-<!-- claimed-end -->
-
 **UR:** UR-001
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-06-24
 **Layer:** backend
 **Entry point:**
 **Terminal state:**
 **Parent:** REQ-003
-**Closure proof:**
+**Closure proof:** checkpoint_log:passed commit:b4b9ce6
 **Criteria approved:** agent-drafted
 **Priority:** 2
 **Size:** M
@@ -30,10 +24,10 @@ Clarification: the supplier-friendly explanation is an operator-facing card (no 
 
 ## Acceptance Criteria
 
-- [ ] Given validation errors, returns a non-empty plain-English explanation that references the failed checks.
-- [ ] Given zero errors, returns a concise positive "all checks passed" message.
-- [ ] The call is made through `ClaudeClient` (mockable); the test uses a fake returning canned text (no network).
-- [ ] The prompt is operator-facing ("what to tell the supplier"), not addressed directly to the supplier.
+- [x] Given validation errors, returns a non-empty plain-English explanation that references the failed checks.
+- [x] Given zero errors, returns a concise positive "all checks passed" message.
+- [x] The call is made through `ClaudeClient` (mockable); the test uses a fake returning canned text (no network).
+- [x] The prompt is operator-facing ("what to tell the supplier"), not addressed directly to the supplier.
 
 ## Verification Steps
 
@@ -50,3 +44,8 @@ Clarification: the supplier-friendly explanation is an operator-facing card (no 
 ## Assets
 
 - (none)
+
+## Outputs
+
+- app/Services/Invoice/ExplanationService.php — second (text-only) Claude call via ClaudeClient → warm operator-facing "what to tell the supplier" explanation; positive message when no errors
+- tests/Unit/Invoice/ExplanationServiceTest.php — 7 Pest tests with fake ClaudeClient (no network)
