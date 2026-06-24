@@ -1,8 +1,35 @@
 ---
 ur: UR-004
 received: 2026-06-24
-status: intake
+status: captured
+classification: feature
+layers_in_scope: [frontend, backend]
+layer_decisions: {}
+reqs:
+  - { id: REQ-021, layer: backend, integration_confidence: high }
+  - { id: REQ-022, layer: backend, integration_confidence: high }
+  - { id: REQ-023, layer: frontend, integration_confidence: high }
+  - { id: REQ-024, layer: none, integration_confidence: n/a }
+acknowledged_partials: []
 ---
+
+<!-- capture-summary-start -->
+## Capture summary (2026-06-24)
+
+| Item | Value |
+|---|---|
+| Classification | feature |
+| Layers in scope | frontend, backend |
+| Layer decisions | (none — all covered) |
+| REQs generated | 4 |
+
+| REQ | Layer | Integration confidence |
+|---|---|---|
+| REQ-021 | backend | high |
+| REQ-022 | backend | high |
+| REQ-023 | frontend | high |
+| REQ-024 | none | n/a |
+<!-- capture-summary-end -->
 
 # UR-004: User Request
 
